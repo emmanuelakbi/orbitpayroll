@@ -47,19 +47,23 @@ orbitpayroll/
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/your-org/orbitpayroll.git
-cd orbitpayroll
+git clone https://github.com/emmanuelakbi/OrbitPayroll.git
+cd OrbitPayroll
 npm install
 ```
 
 ### 2. Environment Setup
 
 ```bash
-# Copy environment files
+# Copy all environment files
 cp .env.example .env
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
+cp packages/database/.env.example packages/database/.env
+cp packages/contracts/.env.example packages/contracts/.env
 ```
+
+The default values in `.env.example` files work out of the box for local development.
 
 ### 3. Start Database
 
@@ -67,22 +71,52 @@ cp apps/web/.env.example apps/web/.env.local
 npm run docker:up
 ```
 
+This starts PostgreSQL on port 15432.
+
 ### 4. Initialize Database
 
 ```bash
 cd packages/database
-npm run db:generate
-npm run db:migrate
+npm run db:generate    # Generate Prisma client
+npm run db:migrate     # Run migrations
+npm run db:seed        # (Optional) Seed with sample data
+cd ../..
 ```
 
-### 5. Run Development Servers
+### 5. Compile Smart Contracts
 
 ```bash
-# API (runs on port 3001)
-cd apps/api && npm run dev
+cd packages/contracts
+npm run compile
+cd ../..
+```
 
-# Web (runs on port 3000)
-cd apps/web && npm run dev
+### 6. Run Development Servers
+
+Open two terminal windows:
+
+```bash
+# Terminal 1: API (runs on port 3001)
+cd apps/api
+npm run dev
+
+# Terminal 2: Web (runs on port 3000)
+cd apps/web
+npm run dev
+```
+
+Visit http://localhost:3000 to access the application.
+
+### 7. Run Tests
+
+```bash
+# Run all tests
+npm run test
+
+# Or run tests for specific packages
+cd apps/api && npm run test
+cd apps/web && npm run test
+cd packages/contracts && npm run test
 ```
 
 ## Available Commands
