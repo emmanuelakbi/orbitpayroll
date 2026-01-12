@@ -1,0 +1,27 @@
+/**
+ * API response types for OrbitPayroll
+ */
+
+export interface ApiResponse<T> {
+  success: true;
+  data: T;
+}
+
+export interface ApiError {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: Record<string, unknown>;
+  };
+}
+
+export type ApiResult<T> = ApiResponse<T> | ApiError;
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}

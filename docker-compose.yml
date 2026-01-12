@@ -1,0 +1,65 @@
+# =============================================================================
+# OrbitPayroll - Local Development Docker Compose
+# =============================================================================
+# Usage:
+#   Start all services:     docker-compose up -d
+#   Start specific service: docker-compose up -d postgres
+#   Stop all services:      docker-compose down
+#   View logs:              docker-compose logs -f
+#   Reset database:         docker-compose down -v && docker-compose up -d
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: orbitpayroll-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-orbitpayroll}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-orbitpayroll_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-orbitpayroll}
+    ports:
+      - "${POSTGRES_PORT:-15432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-orbitpayroll} -d ${POSTGRES_DB:-orbitpayroll}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis (Optional - for caching and rate limiting)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: orbitpayroll-redis
+    restart: unless-stopped
+    profiles:
+      - with-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: orbitpayroll-network

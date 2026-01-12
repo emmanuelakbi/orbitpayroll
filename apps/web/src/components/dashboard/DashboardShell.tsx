@@ -1,0 +1,125 @@
+"use client";
+
+import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Sidebar } from "./Sidebar";
+import { Header } from "./Header";
+import { DevBanner } from "@/components/ui/network-indicator";
+import { api } from "@/lib/api";
+import type { Organization } from "@/lib/api/types";
+
+interface DashboardShellProps {
+  children: React.ReactNode;
+}
+
+// Store for current org selection
+const ORG_STORAGE_KEY = "orbitpayroll_current_org";
+
+function getStoredOrgId(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(ORG_STORAGE_KEY);
+}
+
+function setStoredOrgId(orgId: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ORG_STORAGE_KEY, orgId);
+}
+
+export function DashboardShell({ children }: DashboardShellProps) {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [currentOrgId, setCurrentOrgId] = React.useState<string | null>(null);
+
+  // Fetch organizations
+  const {
+    data: organizations = [],
+    isLoading: orgsLoading,
+  } = useQuery({
+    queryKey: ["organizations"],
+    queryFn: () => api.orgs.list(),
+  });
+
+  // Initialize current org from storage or first org
+  React.useEffect(() => {
+    if (organizations.length > 0 && !currentOrgId) {
+      const storedId = getStoredOrgId();
+      const validStoredOrg = organizations.find((org) => org.id === storedId);
+      
+      if (validStoredOrg) {
+        setCurrentOrgId(validStoredOrg.id);
+      } else {
+        setCurrentOrgId(organizations[0].id);
+        setStoredOrgId(organizations[0].id);
+      }
+    }
+  }, [organizations, currentOrgId]);
+
+  const currentOrg = React.useMemo(
+    () => organizations.find((org) => org.id === currentOrgId) || null,
+    [organizations, currentOrgId]
+  );
+
+  const handleOrgChange = React.useCallback((orgId: string) => {
+    setCurrentOrgId(orgId);
+    setStoredOrgId(orgId);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Development Banner - shows testnet/mock status */}
+      <DevBanner />
+      
+      <div className="flex">
+        {/* Sidebar */}
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
+          {/* Header */}
+          <Header
+            onMenuClick={() => setSidebarOpen(true)}
+            organizations={organizations}
+            currentOrg={currentOrg}
+            onOrgChange={handleOrgChange}
+          />
+
+          {/* Page content */}
+          <main className="flex-1 p-4 md:p-6 lg:p-8">
+            <DashboardContext.Provider
+              value={{
+                currentOrg,
+                organizations,
+                isLoading: orgsLoading,
+                setCurrentOrg: handleOrgChange,
+              }}
+            >
+              {children}
+            </DashboardContext.Provider>
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Context for dashboard state
+interface DashboardContextValue {
+  currentOrg: Organization | null;
+  organizations: Organization[];
+  isLoading: boolean;
+  setCurrentOrg: (orgId: string) => void;
+}
+
+const DashboardContext = React.createContext<DashboardContextValue>({
+  currentOrg: null,
+  organizations: [],
+  isLoading: false,
+  setCurrentOrg: () => {},
+});
+
+export function useDashboard() {
+  const context = React.useContext(DashboardContext);
+  if (!context) {
+    throw new Error("useDashboard must be used within DashboardShell");
+  }
+  return context;
+}

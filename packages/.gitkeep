@@ -1,0 +1,3 @@
+# Packages directory - contains shared libraries
+# - types: Shared TypeScript interfaces
+# - contracts: Smart contract ABIs and addresses

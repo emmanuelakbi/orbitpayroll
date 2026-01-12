@@ -1,0 +1,15 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "deployer": "0x7d12d3A3de749896e77E7c87F723a3EC4CAbe377",
+  "contracts": {
+    "PayrollTreasury": {
+      "address": "0xA6f85Ad3CC0E251624F066052172e76e6edF2380",
+      "admin": "0x7d12d3A3de749896e77E7c87F723a3EC4CAbe377",
+      "mneeToken": "0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF",
+      "deploymentTx": "0xee668b08c4935b2c28caf66ca4a833b0605be3f28731104880fbc08ad62d504d",
+      "blockNumber": 10024400
+    }
+  },
+  "timestamp": "2026-01-11T22:33:38.476Z"
+}

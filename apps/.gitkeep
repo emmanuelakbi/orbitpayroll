@@ -1,0 +1,3 @@
+# Apps directory - contains deployable applications
+# - web: Next.js frontend
+# - api: Node.js backend

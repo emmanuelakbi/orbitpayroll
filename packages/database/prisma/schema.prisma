@@ -1,0 +1,228 @@
+// =============================================================================
+// OrbitPayroll Database Schema
+// =============================================================================
+// This schema defines the database structure for OrbitPayroll using Prisma ORM.
+// Run `npx prisma generate` to generate the Prisma Client.
+// Run `npx prisma migrate dev` to create migrations.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// User & Authentication
+// ============================================
+
+model User {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique @map("wallet_address") @db.VarChar(42)
+  email         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  ownedOrgs     Organization[] @relation("OrgOwner")
+  memberships   OrgMember[]
+  sessions      Session[]
+  notifications Notification[]
+  events        Event[]
+
+  @@index([walletAddress])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash") @db.VarChar(64)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+
+// ============================================
+// Organization
+// ============================================
+
+model Organization {
+  id              String   @id @default(uuid())
+  name            String   @db.VarChar(100)
+  treasuryAddress String   @map("treasury_address") @db.VarChar(42)
+  ownerId         String   @map("owner_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  owner         User           @relation("OrgOwner", fields: [ownerId], references: [id])
+  members       OrgMember[]
+  contractors   Contractor[]
+  payrollRuns   PayrollRun[]
+  events        Event[]
+  notifications Notification[]
+
+  @@index([ownerId])
+  @@map("organizations")
+}
+
+model OrgMember {
+  id        String   @id @default(uuid())
+  orgId     String   @map("org_id")
+  userId    String   @map("user_id")
+  role      Role
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+  @@index([orgId, userId])
+  @@map("org_members")
+}
+
+enum Role {
+  OWNER_ADMIN
+  FINANCE_OPERATOR
+}
+
+
+// ============================================
+// Contractors
+// ============================================
+
+model Contractor {
+  id            String   @id @default(uuid())
+  orgId         String   @map("org_id")
+  name          String   @db.VarChar(100)
+  walletAddress String   @map("wallet_address") @db.VarChar(42)
+  rateAmount    Decimal  @map("rate_amount") @db.Decimal(18, 8)
+  rateCurrency  String   @default("MNEE") @map("rate_currency") @db.VarChar(10)
+  payCycle      PayCycle @map("pay_cycle")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  org          Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  payrollItems PayrollItem[]
+
+  @@index([orgId])
+  @@index([orgId, active])
+  @@map("contractors")
+}
+
+enum PayCycle {
+  WEEKLY
+  BI_WEEKLY
+  MONTHLY
+}
+
+
+// ============================================
+// Payroll
+// ============================================
+
+model PayrollRun {
+  id            String        @id @default(uuid())
+  orgId         String        @map("org_id")
+  runLabel      String?       @map("run_label") @db.VarChar(100)
+  scheduledDate DateTime?     @map("scheduled_date")
+  executedAt    DateTime?     @map("executed_at")
+  txHash        String?       @map("tx_hash") @db.VarChar(66)
+  totalMnee     Decimal       @map("total_mnee") @db.Decimal(18, 8)
+  status        PayrollStatus @default(PENDING)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  org   Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  items PayrollItem[]
+
+  @@index([orgId, executedAt])
+  @@index([txHash])
+  @@map("payroll_runs")
+}
+
+model PayrollItem {
+  id           String     @id @default(uuid())
+  payrollRunId String     @map("payroll_run_id")
+  contractorId String?    @map("contractor_id")
+  amountMnee   Decimal    @map("amount_mnee") @db.Decimal(18, 8)
+  status       ItemStatus @default(PENDING)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  payrollRun PayrollRun  @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  contractor Contractor? @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+
+  @@index([payrollRunId])
+  @@index([contractorId])
+  @@map("payroll_items")
+}
+
+enum PayrollStatus {
+  PENDING
+  EXECUTED
+  FAILED
+}
+
+enum ItemStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+
+// ============================================
+// Events & Notifications
+// ============================================
+
+model Event {
+  id        String   @id @default(uuid())
+  orgId     String?  @map("org_id")
+  userId    String?  @map("user_id")
+  eventType String   @map("event_type") @db.VarChar(50)
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  org  Organization? @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([orgId, eventType, createdAt])
+  @@index([createdAt])
+  @@map("events")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  orgId     String?  @map("org_id")
+  type      String   @db.VarChar(50)
+  title     String   @db.VarChar(200)
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization? @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+  @@index([orgId])
+  @@map("notifications")
+}

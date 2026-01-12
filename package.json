@@ -1,0 +1,29 @@
+{
+  "name": "orbitpayroll",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Web3 payroll platform for organizations",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "clean": "rm -rf node_modules && npm run clean --workspaces --if-present",
+    "docker:up": "docker-compose up -d postgres",
+    "docker:up:all": "docker-compose --profile with-redis up -d",
+    "docker:down": "docker-compose down",
+    "docker:reset": "docker-compose down -v && docker-compose up -d postgres",
+    "docker:logs": "docker-compose logs -f",
+    "test:e2e": "./scripts/test-harness.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "overrides": {
+    "zod": "3.22.4"
+  }
+}
