@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSession, formatAddress } from "@/lib/auth";
+import { useSession } from "@/lib/auth";
 import { useDashboard } from "@/components/dashboard";
 import { Settings, Building2, Wallet, Copy, Check, ExternalLink } from "lucide-react";
 

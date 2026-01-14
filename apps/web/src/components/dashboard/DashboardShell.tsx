@@ -49,8 +49,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
     queryFn: () => api.orgs.list(),
   });
 
-  // Ensure organizations is always an array
-  const organizations = Array.isArray(orgsData) ? orgsData : [];
+  // Ensure organizations is always an array - memoized to prevent dependency changes
+  const organizations = React.useMemo(
+    () => (Array.isArray(orgsData) ? orgsData : []),
+    [orgsData]
+  );
 
   // Initialize current org from storage or first org
   React.useEffect(() => {
