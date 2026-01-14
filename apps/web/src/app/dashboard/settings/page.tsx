@@ -112,7 +112,7 @@ export default function SettingsPage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => copyToClipboard(currentOrg.treasuryAddress, "treasury")}
+                        onClick={() => copyToClipboard(currentOrg.treasuryAddress!, "treasury")}
                         aria-label="Copy treasury address"
                       >
                         {copied === "treasury" ? (
