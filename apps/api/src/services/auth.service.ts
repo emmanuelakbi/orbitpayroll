@@ -217,15 +217,15 @@ export async function generateNonce(
   const checksummedAddress = getAddress(walletAddress);
 
   // Get domain from environment or use default
-  const siweOrigin = process.env.SIWE_ORIGIN ?? 'https://orbitpayroll-web.vercel.app';
-  const siweDomain = new URL(siweOrigin).host;
+  const siweDomain = process.env.SIWE_DOMAIN ?? 'orbitpayroll.io';
+  const siweUri = process.env.SIWE_URI ?? `https://${siweDomain}`;
 
   // Requirement 1.1: Create SIWE message
   const siweMessage = new SiweMessage({
     domain: siweDomain,
     address: checksummedAddress,
     statement: 'Sign in to OrbitPayroll',
-    uri: siweOrigin,
+    uri: siweUri,
     version: '1',
     chainId: CHAIN_ID,
     nonce,
