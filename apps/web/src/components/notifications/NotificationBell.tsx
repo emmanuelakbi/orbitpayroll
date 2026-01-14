@@ -79,6 +79,14 @@ export function NotificationBell({ className }: NotificationBellProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Handle notification click
+  const handleNotificationClick = React.useCallback((notification: Notification) => {
+    if (!notification.read) {
+      markAsReadMutation.mutate(notification.id);
+    }
+    // Could navigate based on notification type here
+  }, [markAsReadMutation]);
+
   // Keyboard navigation for dropdown
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => {
@@ -108,7 +116,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
         case " ":
           e.preventDefault();
           if (focusedIndex >= 0 && focusedIndex < notifications.length) {
-            handleNotificationClick(notifications[focusedIndex]);
+            handleNotificationClick(notifications[focusedIndex]!);
           }
           break;
         case "Escape":
@@ -131,7 +139,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
           break;
       }
     },
-    [isOpen, notifications, focusedIndex]
+    [isOpen, notifications, focusedIndex, handleNotificationClick]
   );
 
   // Focus the selected item when dropdown opens
@@ -143,14 +151,6 @@ export function NotificationBell({ className }: NotificationBellProps) {
       }
     }
   }, [isOpen, focusedIndex]);
-
-  // Handle notification click
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.read) {
-      markAsReadMutation.mutate(notification.id);
-    }
-    // Could navigate based on notification type here
-  };
 
   // Format relative time
   const formatRelativeTime = (dateString: string): string => {

@@ -4,7 +4,7 @@
  */
 
 if (typeof window === "undefined") {
-  // @ts-ignore - Polyfill for SSR
+  // @ts-expect-error - Polyfill for SSR, global.indexedDB doesn't exist in Node
   global.indexedDB = {
     open: () => ({
       addEventListener: () => {},
