@@ -140,4 +140,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Startup script that runs migrations then starts the app (Requirement 1.7)
 # The app will fail fast if required env vars are missing (Requirement 1.8)
-CMD ["sh", "-c", "cd packages/database && npx prisma migrate deploy && cd /app/apps/api && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma && node /app/apps/api/dist/index.js"]
