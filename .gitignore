@@ -32,6 +32,9 @@ docker-compose.override.yml
 # Kiro (optional - remove if you want to track specs)
 # .kiro/
 
+# Documentation (keep local only)
+docs/
+
 # OS
 .DS_Store
 Thumbs.db
