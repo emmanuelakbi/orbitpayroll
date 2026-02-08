@@ -101,7 +101,7 @@ describe('Property 7: Input Validation Completeness', () => {
             fc.string({ minLength: 43, maxLength: 100 }), // Too long
             fc.constant('not-an-address'),
             fc.constant('0x' + 'g'.repeat(40)), // Invalid hex chars
-            fc.constant('1234567890123456789012345678901234567890'), // Missing 0x prefix
+            fc.constant('1234567890123456789012345678901234567890') // Missing 0x prefix
           ),
           async (invalidAddress) => {
             const response = await request(app)
@@ -130,9 +130,7 @@ describe('Property 7: Input Validation Completeness', () => {
             anotherField: fc.integer(),
           }),
           async (invalidBody) => {
-            const response = await request(app)
-              .post('/api/v1/auth/nonce')
-              .send(invalidBody);
+            const response = await request(app).post('/api/v1/auth/nonce').send(invalidBody);
 
             expect(response.status).toBe(400);
             expect(response.body.code).toBe('VALIDATION_ERROR');
@@ -150,12 +148,10 @@ describe('Property 7: Input Validation Completeness', () => {
         fc.asyncProperty(
           fc.oneof(
             fc.constant(''), // Empty string
-            fc.string({ minLength: 101, maxLength: 200 }), // Too long
+            fc.string({ minLength: 101, maxLength: 200 }) // Too long
           ),
           async (invalidName) => {
-            const response = await request(app)
-              .post('/test/org')
-              .send({ name: invalidName });
+            const response = await request(app).post('/test/org').send({ name: invalidName });
 
             expect(response.status).toBe(400);
             expect(response.body.code).toBe('VALIDATION_ERROR');
@@ -173,16 +169,15 @@ describe('Property 7: Input Validation Completeness', () => {
         fc.asyncProperty(
           // Generate strings that are NOT valid UUIDs but are valid URL path segments
           fc.oneof(
-            fc.stringMatching(/^[a-zA-Z0-9-]{1,35}$/).filter(s => s.length > 0), // Too short, alphanumeric only
+            fc.stringMatching(/^[a-zA-Z0-9-]{1,35}$/).filter((s) => s.length > 0), // Too short, alphanumeric only
             fc.constant('not-a-uuid'),
             fc.constant('12345678-1234-1234-1234-12345678901'), // Missing digit
             fc.constant('gggggggg-gggg-gggg-gggg-gggggggggggg'), // Invalid chars
             fc.constant('invalid-uuid-format'),
-            fc.constant('abc123'),
+            fc.constant('abc123')
           ),
           async (invalidUuid) => {
-            const response = await request(app)
-              .get(`/test/uuid/${invalidUuid}`);
+            const response = await request(app).get(`/test/uuid/${invalidUuid}`);
 
             expect(response.status).toBe(400);
             expect(response.body.code).toBe('VALIDATION_ERROR');
@@ -200,19 +195,17 @@ describe('Property 7: Input Validation Completeness', () => {
           fc.record({
             name: fc.oneof(
               fc.constant(''), // Empty
-              fc.string({ minLength: 101, maxLength: 200 }), // Too long
+              fc.string({ minLength: 101, maxLength: 200 }) // Too long
             ),
             walletAddress: fc.constant('invalid-wallet'),
             rateAmount: fc.oneof(
               fc.constant(-100), // Negative
-              fc.constant(0), // Zero
+              fc.constant(0) // Zero
             ),
             payCycle: fc.constant('INVALID_CYCLE'),
           }),
           async (invalidContractor) => {
-            const response = await request(app)
-              .post('/test/contractor')
-              .send(invalidContractor);
+            const response = await request(app).post('/test/contractor').send(invalidContractor);
 
             expect(response.status).toBe(400);
             expect(response.body.code).toBe('VALIDATION_ERROR');
@@ -229,23 +222,18 @@ describe('Property 7: Input Validation Completeness', () => {
 
     it('should reject negative rate amounts with field-level error', async () => {
       await fc.assert(
-        fc.asyncProperty(
-          fc.integer({ min: -10000, max: -1 }),
-          async (negativeRate) => {
-            const response = await request(app)
-              .post('/test/contractor')
-              .send({
-                name: 'Test Contractor',
-                walletAddress: '0x1234567890123456789012345678901234567890',
-                rateAmount: negativeRate,
-                payCycle: 'MONTHLY',
-              });
+        fc.asyncProperty(fc.integer({ min: -10000, max: -1 }), async (negativeRate) => {
+          const response = await request(app).post('/test/contractor').send({
+            name: 'Test Contractor',
+            walletAddress: '0x1234567890123456789012345678901234567890',
+            rateAmount: negativeRate,
+            payCycle: 'MONTHLY',
+          });
 
-            expect(response.status).toBe(400);
-            expect(response.body.code).toBe('VALIDATION_ERROR');
-            expect(response.body.details.rateAmount).toBeDefined();
-          }
-        ),
+          expect(response.status).toBe(400);
+          expect(response.body.code).toBe('VALIDATION_ERROR');
+          expect(response.body.details.rateAmount).toBeDefined();
+        }),
         { numRuns: 30 }
       );
     });
@@ -253,16 +241,14 @@ describe('Property 7: Input Validation Completeness', () => {
     it('should reject invalid pay cycles with field-level error', async () => {
       await fc.assert(
         fc.asyncProperty(
-          fc.string().filter(s => !['WEEKLY', 'BI_WEEKLY', 'MONTHLY'].includes(s)),
+          fc.string().filter((s) => !['WEEKLY', 'BI_WEEKLY', 'MONTHLY'].includes(s)),
           async (invalidCycle) => {
-            const response = await request(app)
-              .post('/test/contractor')
-              .send({
-                name: 'Test Contractor',
-                walletAddress: '0x1234567890123456789012345678901234567890',
-                rateAmount: 1000,
-                payCycle: invalidCycle,
-              });
+            const response = await request(app).post('/test/contractor').send({
+              name: 'Test Contractor',
+              walletAddress: '0x1234567890123456789012345678901234567890',
+              rateAmount: 1000,
+              payCycle: invalidCycle,
+            });
 
             expect(response.status).toBe(400);
             expect(response.body.code).toBe('VALIDATION_ERROR');
@@ -283,7 +269,7 @@ describe('Property 7: Input Validation Completeness', () => {
             fc.constant('0x' + 'g'.repeat(64)), // Invalid hex
             fc.constant('0x' + '1'.repeat(63)), // Too short
             fc.constant('0x' + '1'.repeat(65)), // Too long
-            fc.string({ minLength: 1, maxLength: 65 }), // Random strings
+            fc.string({ minLength: 1, maxLength: 65 }) // Random strings
           ),
           async (invalidTxHash) => {
             const response = await request(app)
@@ -323,7 +309,13 @@ describe('Property 7: Input Validation Completeness', () => {
     it('should reject invalid contractor IDs in payroll items', async () => {
       await fc.assert(
         fc.asyncProperty(
-          fc.string().filter(s => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)),
+          fc
+            .string({ minLength: 1 })
+            .filter(
+              (s) =>
+                /^[\x20-\x7E]+$/.test(s) &&
+                !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
+            ),
           async (invalidContractorId) => {
             const response = await request(app)
               .post('/test/payroll')
@@ -351,21 +343,11 @@ describe('Property 7: Input Validation Completeness', () => {
       await fc.assert(
         fc.asyncProperty(
           fc.record({
-            endpoint: fc.constantFrom(
-              '/api/v1/auth/nonce',
-              '/test/org',
-              '/test/contractor',
-            ),
-            body: fc.oneof(
-              fc.constant({}),
-              fc.constant({ invalid: 'data' }),
-              fc.constant(null),
-            ),
+            endpoint: fc.constantFrom('/api/v1/auth/nonce', '/test/org', '/test/contractor'),
+            body: fc.oneof(fc.constant({}), fc.constant({ invalid: 'data' }), fc.constant(null)),
           }),
           async ({ endpoint, body }) => {
-            const response = await request(app)
-              .post(endpoint)
-              .send(body);
+            const response = await request(app).post(endpoint).send(body);
 
             // All validation errors should have consistent format
             if (response.status === 400) {

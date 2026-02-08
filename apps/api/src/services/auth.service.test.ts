@@ -4,11 +4,11 @@
  * Unit tests for nonce generation, signature verification, and token issuance.
  * **Feature: 09-testing, Task 2.1: Auth Service Tests**
  * **Validates: Requirements 2.3**
- * 
+ *
  * Property-based tests for nonce uniqueness and expiration.
  * **Feature: 03-backend, Property 1: Nonce Uniqueness and Expiration**
  * **Validates: Requirements 1.1, 1.2**
- * 
+ *
  * Property-based tests for JWT security.
  * **Feature: 08-security, Property 2: JWT Security**
  * **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7**
@@ -16,7 +16,15 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import fc from 'fast-check';
-import { generateNonce, verifyAccessToken, verifySignature, refreshTokens, logout, invalidateAllSessions, _internal } from './auth.service.js';
+import {
+  generateNonce,
+  verifyAccessToken,
+  verifySignature,
+  refreshTokens,
+  logout,
+  invalidateAllSessions,
+  _internal,
+} from './auth.service.js';
 import { getAddress } from 'ethers';
 import jwt from 'jsonwebtoken';
 import { db } from '../lib/db.js';
@@ -25,17 +33,15 @@ import { db } from '../lib/db.js';
  * Generate valid checksummed Ethereum addresses for testing.
  * Uses ethers.js getAddress to ensure proper checksum.
  */
-const validEthereumAddressArb = fc
-  .hexaString({ minLength: 40, maxLength: 40 })
-  .map((hex) => {
-    try {
-      // Convert to checksummed address using ethers
-      return getAddress(`0x${hex}`);
-    } catch {
-      // If invalid, return a known valid address
-      return '0x0000000000000000000000000000000000000001';
-    }
-  });
+const validEthereumAddressArb = fc.hexaString({ minLength: 40, maxLength: 40 }).map((hex) => {
+  try {
+    // Convert to checksummed address using ethers
+    return getAddress(`0x${hex}`);
+  } catch {
+    // If invalid, return a known valid address
+    return '0x0000000000000000000000000000000000000001';
+  }
+});
 
 describe('AuthService', () => {
   beforeEach(() => {
@@ -57,10 +63,10 @@ describe('AuthService', () => {
           async (walletAddresses) => {
             // Clear rate limit store to avoid rate limiting during test
             _internal.nonceRateLimitStore.clear();
-            
+
             // Generate nonces for all wallet addresses with unique IPs
             const results = await Promise.all(
-              walletAddresses.map((addr, index) => 
+              walletAddresses.map((addr, index) =>
                 generateNonce(addr, { ip: `192.168.1.${index}` })
               )
             );
@@ -146,11 +152,12 @@ describe('AuthService', () => {
             const containsNonce = result.message.includes(result.nonce);
 
             // Message should contain the wallet address (checksummed or lowercase)
-            const containsWallet =
-              result.message.toLowerCase().includes(walletAddress.toLowerCase());
+            const containsWallet = result.message
+              .toLowerCase()
+              .includes(walletAddress.toLowerCase());
 
             // Message should contain SIWE standard elements
-            const containsDomain = result.message.includes('orbitpayroll.com');
+            const containsDomain = result.message.includes('orbitpayroll.io');
             const containsStatement = result.message.includes('Sign in to OrbitPayroll');
 
             return containsNonce && containsWallet && containsDomain && containsStatement;
@@ -173,10 +180,10 @@ describe('AuthService', () => {
           async (walletAddress, count) => {
             // Clear rate limit store to avoid rate limiting during test
             _internal.nonceRateLimitStore.clear();
-            
+
             // Generate multiple nonces for the same wallet with unique IPs
             const results = await Promise.all(
-              Array.from({ length: count }, (_, index) => 
+              Array.from({ length: count }, (_, index) =>
                 generateNonce(walletAddress, { ip: `192.168.1.${index}` })
               )
             );
@@ -200,14 +207,11 @@ describe('AuthService', () => {
      */
     it('should validate JWT secret minimum length of 32 characters', () => {
       fc.assert(
-        fc.property(
-          fc.string({ minLength: 0, maxLength: 100 }),
-          (secret) => {
-            const isValid = _internal.validateJwtSecret(secret);
-            const expectedValid = secret.length >= _internal.JWT_SECRET_MIN_LENGTH;
-            return isValid === expectedValid;
-          }
-        ),
+        fc.property(fc.string({ minLength: 0, maxLength: 100 }), (secret) => {
+          const isValid = _internal.validateJwtSecret(secret);
+          const expectedValid = secret.length >= _internal.JWT_SECRET_MIN_LENGTH;
+          return isValid === expectedValid;
+        }),
         { numRuns: 100 }
       );
     });
@@ -225,14 +229,14 @@ describe('AuthService', () => {
           (value, unit) => {
             const expiryString = `${value}${unit}`;
             const result = _internal.parseExpiryToMs(expiryString);
-            
+
             const multipliers: Record<string, number> = {
               s: 1000,
               m: 60 * 1000,
               h: 60 * 60 * 1000,
               d: 24 * 60 * 60 * 1000,
             };
-            
+
             const expected = value * multipliers[unit]!;
             return result === expected;
           }
@@ -254,10 +258,10 @@ describe('AuthService', () => {
           (token1, token2) => {
             // Skip if tokens are the same
             if (token1 === token2) return true;
-            
+
             const hash1 = _internal.hashToken(token1);
             const hash2 = _internal.hashToken(token2);
-            
+
             return hash1 !== hash2;
           }
         ),
@@ -272,16 +276,13 @@ describe('AuthService', () => {
      */
     it('should produce deterministic hashes for the same token', () => {
       fc.assert(
-        fc.property(
-          fc.hexaString({ minLength: 32, maxLength: 128 }),
-          (token) => {
-            const hash1 = _internal.hashToken(token);
-            const hash2 = _internal.hashToken(token);
-            const hash3 = _internal.hashToken(token);
-            
-            return hash1 === hash2 && hash2 === hash3;
-          }
-        ),
+        fc.property(fc.hexaString({ minLength: 32, maxLength: 128 }), (token) => {
+          const hash1 = _internal.hashToken(token);
+          const hash2 = _internal.hashToken(token);
+          const hash3 = _internal.hashToken(token);
+
+          return hash1 === hash2 && hash2 === hash3;
+        }),
         { numRuns: 100 }
       );
     });
@@ -293,19 +294,16 @@ describe('AuthService', () => {
      */
     it('should produce 64-character hex hashes (SHA-256)', () => {
       fc.assert(
-        fc.property(
-          fc.string({ minLength: 1, maxLength: 1000 }),
-          (token) => {
-            const hash = _internal.hashToken(token);
-            
-            // SHA-256 produces 64 hex characters
-            const isCorrectLength = hash.length === 64;
-            // Should only contain hex characters
-            const isHex = /^[a-f0-9]+$/.test(hash);
-            
-            return isCorrectLength && isHex;
-          }
-        ),
+        fc.property(fc.string({ minLength: 1, maxLength: 1000 }), (token) => {
+          const hash = _internal.hashToken(token);
+
+          // SHA-256 produces 64 hex characters
+          const isCorrectLength = hash.length === 64;
+          // Should only contain hex characters
+          const isHex = /^[a-f0-9]+$/.test(hash);
+
+          return isCorrectLength && isHex;
+        }),
         { numRuns: 100 }
       );
     });
@@ -318,7 +316,7 @@ describe('AuthService', () => {
     it('should generate a 64-character hex nonce', async () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const result = await generateNonce(walletAddress, { ip: '127.0.0.1' });
-      
+
       expect(result.nonce).toHaveLength(64);
       expect(/^[a-f0-9]+$/.test(result.nonce)).toBe(true);
     });
@@ -326,8 +324,8 @@ describe('AuthService', () => {
     it('should return a valid SIWE message', async () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const result = await generateNonce(walletAddress, { ip: '127.0.0.1' });
-      
-      expect(result.message).toContain('orbitpayroll.com');
+
+      expect(result.message).toContain('orbitpayroll.io');
       expect(result.message).toContain('Sign in to OrbitPayroll');
       expect(result.message).toContain(result.nonce);
     });
@@ -335,7 +333,7 @@ describe('AuthService', () => {
     it('should return an expiration time in ISO format', async () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const result = await generateNonce(walletAddress, { ip: '127.0.0.1' });
-      
+
       const expiresAt = new Date(result.expiresAt);
       expect(expiresAt.toISOString()).toBe(result.expiresAt);
     });
@@ -343,7 +341,7 @@ describe('AuthService', () => {
     it('should store the nonce in the nonce store', async () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const result = await generateNonce(walletAddress, { ip: '127.0.0.1' });
-      
+
       const stored = _internal.nonceStore.get(result.nonce);
       expect(stored).toBeDefined();
       expect(stored?.walletAddress).toBe(walletAddress.toLowerCase());
@@ -352,33 +350,33 @@ describe('AuthService', () => {
     it('should rate limit nonce requests from the same IP', async () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const ip = '192.168.1.100';
-      
+
       // Make 10 requests (the limit)
       for (let i = 0; i < 10; i++) {
         await generateNonce(walletAddress, { ip });
       }
-      
+
       // 11th request should be rate limited
       await expect(generateNonce(walletAddress, { ip })).rejects.toThrow('Too many nonce requests');
     });
 
     it('should allow requests from different IPs', async () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
-      
+
       // Make requests from different IPs
       const results = await Promise.all([
         generateNonce(walletAddress, { ip: '192.168.1.1' }),
         generateNonce(walletAddress, { ip: '192.168.1.2' }),
         generateNonce(walletAddress, { ip: '192.168.1.3' }),
       ]);
-      
+
       expect(results).toHaveLength(3);
-      results.forEach(r => expect(r.nonce).toBeDefined());
+      results.forEach((r) => expect(r.nonce).toBeDefined());
     });
 
     it('should clean up expired nonces', async () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
-      
+
       // Add an expired nonce manually
       const expiredNonce = 'expired-nonce-12345678901234567890123456789012';
       _internal.nonceStore.set(expiredNonce, {
@@ -388,10 +386,10 @@ describe('AuthService', () => {
         message: 'test message',
         createdAt: new Date(Date.now() - 6 * 60 * 1000),
       });
-      
+
       // Generate a new nonce (triggers cleanup)
       await generateNonce(walletAddress, { ip: '127.0.0.1' });
-      
+
       // Expired nonce should be cleaned up
       expect(_internal.nonceStore.has(expiredNonce)).toBe(false);
     });
@@ -405,7 +403,7 @@ describe('AuthService', () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const signature = '0x' + 'a'.repeat(130);
       const nonce = 'non-existent-nonce-1234567890123456789012345';
-      
+
       await expect(
         verifySignature(walletAddress, signature, nonce, { ip: '127.0.0.1' })
       ).rejects.toThrow();
@@ -415,7 +413,7 @@ describe('AuthService', () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const signature = '0x' + 'a'.repeat(130);
       const nonce = 'expired-nonce-12345678901234567890123456789012';
-      
+
       // Add an expired nonce
       _internal.nonceStore.set(nonce, {
         nonce,
@@ -424,7 +422,7 @@ describe('AuthService', () => {
         message: 'test message',
         createdAt: new Date(Date.now() - 6 * 60 * 1000),
       });
-      
+
       await expect(
         verifySignature(walletAddress, signature, nonce, { ip: '127.0.0.1' })
       ).rejects.toThrow();
@@ -435,7 +433,7 @@ describe('AuthService', () => {
       const differentWallet = '0x0987654321098765432109876543210987654321';
       const signature = '0x' + 'a'.repeat(130);
       const nonce = 'test-nonce-123456789012345678901234567890123';
-      
+
       // Add a nonce for a different wallet
       _internal.nonceStore.set(nonce, {
         nonce,
@@ -444,7 +442,7 @@ describe('AuthService', () => {
         message: 'test message',
         createdAt: new Date(),
       });
-      
+
       await expect(
         verifySignature(walletAddress, signature, nonce, { ip: '127.0.0.1' })
       ).rejects.toThrow();
@@ -454,7 +452,7 @@ describe('AuthService', () => {
       const walletAddress = '0x1234567890123456789012345678901234567890';
       const signature = '0x' + 'a'.repeat(130);
       const nonce = 'expired-nonce-12345678901234567890123456789012';
-      
+
       // Add an expired nonce
       _internal.nonceStore.set(nonce, {
         nonce,
@@ -463,13 +461,13 @@ describe('AuthService', () => {
         message: 'test message',
         createdAt: new Date(Date.now() - 6 * 60 * 1000),
       });
-      
+
       try {
         await verifySignature(walletAddress, signature, nonce, { ip: '127.0.0.1' });
       } catch {
         // Expected to throw
       }
-      
+
       // Nonce should be deleted
       expect(_internal.nonceStore.has(nonce)).toBe(false);
     });
@@ -479,20 +477,19 @@ describe('AuthService', () => {
   // Unit Tests for Token Issuance (verifyAccessToken)
   // ==========================================================================
   describe('Unit Tests: Token Issuance', () => {
-    const JWT_SECRET = process.env.JWT_SECRET ?? 'test-secret-key-for-testing-minimum-32-characters-long';
+    const JWT_SECRET =
+      process.env.JWT_SECRET ?? 'test-secret-key-for-testing-minimum-32-characters-long';
 
     it('should verify a valid access token', () => {
       const userId = 'test-user-id';
       const walletAddress = '0x1234567890123456789012345678901234567890';
-      
-      const token = jwt.sign(
-        { sub: userId, wallet: walletAddress },
-        JWT_SECRET,
-        { expiresIn: '15m' }
-      );
-      
+
+      const token = jwt.sign({ sub: userId, wallet: walletAddress }, JWT_SECRET, {
+        expiresIn: '15m',
+      });
+
       const payload = verifyAccessToken(token);
-      
+
       expect(payload.sub).toBe(userId);
       expect(payload.wallet).toBe(walletAddress);
     });
@@ -500,26 +497,26 @@ describe('AuthService', () => {
     it('should reject an expired access token', () => {
       const userId = 'test-user-id';
       const walletAddress = '0x1234567890123456789012345678901234567890';
-      
+
       const token = jwt.sign(
         { sub: userId, wallet: walletAddress },
         JWT_SECRET,
         { expiresIn: '-1s' } // Already expired
       );
-      
+
       expect(() => verifyAccessToken(token)).toThrow();
     });
 
     it('should reject a token with invalid signature', () => {
       const userId = 'test-user-id';
       const walletAddress = '0x1234567890123456789012345678901234567890';
-      
+
       const token = jwt.sign(
         { sub: userId, wallet: walletAddress },
         'wrong-secret-key-that-is-long-enough-for-testing',
         { expiresIn: '15m' }
       );
-      
+
       expect(() => verifyAccessToken(token)).toThrow();
     });
 
@@ -530,15 +527,13 @@ describe('AuthService', () => {
     it('should include iat and exp claims in verified token', () => {
       const userId = 'test-user-id';
       const walletAddress = '0x1234567890123456789012345678901234567890';
-      
-      const token = jwt.sign(
-        { sub: userId, wallet: walletAddress },
-        JWT_SECRET,
-        { expiresIn: '15m' }
-      );
-      
+
+      const token = jwt.sign({ sub: userId, wallet: walletAddress }, JWT_SECRET, {
+        expiresIn: '15m',
+      });
+
       const payload = verifyAccessToken(token);
-      
+
       expect(payload.iat).toBeDefined();
       expect(payload.exp).toBeDefined();
       expect(payload.exp).toBeGreaterThan(payload.iat);
@@ -551,10 +546,10 @@ describe('AuthService', () => {
   describe('Unit Tests: Rate Limiting', () => {
     it('should track rate limit count correctly', () => {
       const ip = '192.168.1.50';
-      
+
       // First request should pass
       expect(_internal.checkNonceRateLimit(ip)).toBe(true);
-      
+
       // Check the count
       const entry = _internal.nonceRateLimitStore.get(ip);
       expect(entry?.count).toBe(1);
@@ -562,16 +557,16 @@ describe('AuthService', () => {
 
     it('should reset rate limit after window expires', () => {
       const ip = '192.168.1.51';
-      
+
       // Set up an old rate limit entry
       _internal.nonceRateLimitStore.set(ip, {
         count: 10,
         windowStart: new Date(Date.now() - _internal.NONCE_RATE_LIMIT_WINDOW_MS - 1000),
       });
-      
+
       // Should pass because window expired
       expect(_internal.checkNonceRateLimit(ip)).toBe(true);
-      
+
       // Count should be reset to 1
       const entry = _internal.nonceRateLimitStore.get(ip);
       expect(entry?.count).toBe(1);
@@ -579,13 +574,13 @@ describe('AuthService', () => {
 
     it('should block requests when rate limit is exceeded', () => {
       const ip = '192.168.1.52';
-      
+
       // Set up a rate limit entry at the max
       _internal.nonceRateLimitStore.set(ip, {
         count: _internal.NONCE_RATE_LIMIT_MAX,
         windowStart: new Date(),
       });
-      
+
       // Should be blocked
       expect(_internal.checkNonceRateLimit(ip)).toBe(false);
     });
@@ -593,22 +588,22 @@ describe('AuthService', () => {
     it('should clean up expired rate limit entries', () => {
       const ip1 = '192.168.1.53';
       const ip2 = '192.168.1.54';
-      
+
       // Add an expired entry
       _internal.nonceRateLimitStore.set(ip1, {
         count: 5,
         windowStart: new Date(Date.now() - _internal.NONCE_RATE_LIMIT_WINDOW_MS - 1000),
       });
-      
+
       // Add a current entry
       _internal.nonceRateLimitStore.set(ip2, {
         count: 3,
         windowStart: new Date(),
       });
-      
+
       // Run cleanup
       _internal.cleanupRateLimitEntries();
-      
+
       // Expired entry should be removed
       expect(_internal.nonceRateLimitStore.has(ip1)).toBe(false);
       // Current entry should remain
