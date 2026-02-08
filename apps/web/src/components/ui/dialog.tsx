@@ -29,21 +29,21 @@ interface DialogProps {
 
 /**
  * Accessible Dialog component following WAI-ARIA Dialog pattern.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Uses role="dialog" with aria-modal="true"
  * - Properly labeled via aria-labelledby and aria-describedby
  * - Focus is trapped within the dialog when open
  * - Escape key closes the dialog
  * - Focus returns to trigger element on close
- * 
+ *
  * Validates: Requirements 7.1, 7.2, 7.3
  */
 function Dialog({ open = false, onOpenChange, children }: DialogProps) {
   const [internalOpen, setInternalOpen] = React.useState(open);
   const isControlled = onOpenChange !== undefined;
   const isOpen = isControlled ? open : internalOpen;
-  
+
   // Generate unique IDs for accessibility
   const id = React.useId();
   const titleId = `dialog-title-${id}`;
@@ -57,11 +57,18 @@ function Dialog({ open = false, onOpenChange, children }: DialogProps) {
         setInternalOpen(newOpen);
       }
     },
-    [isControlled, onOpenChange]
+    [isControlled, onOpenChange],
   );
 
   return (
-    <DialogContext.Provider value={{ open: isOpen, onOpenChange: handleOpenChange, titleId, descriptionId }}>
+    <DialogContext.Provider
+      value={{
+        open: isOpen,
+        onOpenChange: handleOpenChange,
+        titleId,
+        descriptionId,
+      }}
+    >
       {children}
     </DialogContext.Provider>
   );
@@ -76,9 +83,12 @@ function DialogTrigger({ children, asChild }: DialogTriggerProps) {
   const { onOpenChange } = useDialogContext();
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<{ onClick?: () => void }>, {
-      onClick: () => onOpenChange(true),
-    });
+    return React.cloneElement(
+      children as React.ReactElement<{ onClick?: () => void }>,
+      {
+        onClick: () => onOpenChange(true),
+      },
+    );
   }
 
   return (
@@ -108,14 +118,14 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
     if (open) {
       // Store the previously focused element
       previousActiveElement.current = document.activeElement as HTMLElement;
-      
+
       document.addEventListener("keydown", handleEscape);
       document.body.style.overflow = "hidden";
-      
+
       // Focus the dialog content or first focusable element
       requestAnimationFrame(() => {
         const firstFocusable = contentRef.current?.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
         );
         if (firstFocusable) {
           firstFocusable.focus();
@@ -128,7 +138,7 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.body.style.overflow = "";
-      
+
       // Return focus to the previously focused element
       if (!open && previousActiveElement.current) {
         previousActiveElement.current.focus();
@@ -143,9 +153,10 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
     const handleTab = (e: KeyboardEvent) => {
       if (e.key !== "Tab" || !contentRef.current) return;
 
-      const focusableElements = contentRef.current.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
+      const focusableElements =
+        contentRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
 
@@ -168,7 +179,7 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
     <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 animate-in fade-in-0"
+        className="fixed inset-0 z-40 bg-black/80 animate-in fade-in-0"
         onClick={() => onOpenChange(false)}
         aria-hidden="true"
       />
@@ -180,9 +191,13 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         tabIndex={-1}
-        className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%] sm:rounded-lg"
+        className={cn(
+          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%] sm:rounded-lg",
+          className,
+        )}
+        {...props}
       >
-        <div className={cn("relative", className)} {...props}>
+        <div className="relative">
           {children}
           <button
             type="button"
@@ -206,7 +221,7 @@ function DialogHeader({
     <div
       className={cn(
         "flex flex-col space-y-1.5 text-center sm:text-left",
-        className
+        className,
       )}
       {...props}
     />
@@ -221,7 +236,7 @@ function DialogFooter({
     <div
       className={cn(
         "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-        className
+        className,
       )}
       {...props}
     />
@@ -238,7 +253,7 @@ function DialogTitle({
       id={titleId}
       className={cn(
         "text-lg font-semibold leading-none tracking-tight",
-        className
+        className,
       )}
       {...props}
     />
