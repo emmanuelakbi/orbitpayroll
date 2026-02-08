@@ -120,9 +120,9 @@ export function ContractorFormModal({
         setRateCurrency(contractor.rateCurrency);
         setPayCycle(contractor.payCycle);
       } else {
-        setName("");
-        setWalletAddress("");
-        setRateAmount("");
+        setName("John Doe");
+        setWalletAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18");
+        setRateAmount("1000");
         setRateCurrency("MNEE");
         setPayCycle("MONTHLY");
       }
