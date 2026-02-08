@@ -40,7 +40,7 @@ export const invalidAddressArb = fc.oneof(
   fc.constant("0x123"),
   fc.constant("not-an-address"),
   fc.hexaString({ minLength: 1, maxLength: 39 }).map((hex) => `0x${hex}`),
-  fc.hexaString({ minLength: 41, maxLength: 50 }).map((hex) => `0x${hex}`)
+  fc.hexaString({ minLength: 41, maxLength: 50 }).map((hex) => `0x${hex}`),
 );
 
 // =============================================================================
@@ -53,7 +53,7 @@ export const invalidAddressArb = fc.oneof(
 export const mneeAmountArb = fc
   .tuple(
     fc.integer({ min: 0, max: 999999999 }),
-    fc.integer({ min: 0, max: 99999999 })
+    fc.integer({ min: 0, max: 99999999 }),
   )
   .map(([intPart, decPart]) => {
     const decStr = decPart.toString().padStart(8, "0");
@@ -66,7 +66,7 @@ export const mneeAmountArb = fc
 export const positiveMneeAmountArb = fc
   .tuple(
     fc.integer({ min: 1, max: 999999999 }),
-    fc.integer({ min: 0, max: 99999999 })
+    fc.integer({ min: 0, max: 99999999 }),
   )
   .map(([intPart, decPart]) => {
     const decStr = decPart.toString().padStart(8, "0");
@@ -107,7 +107,7 @@ export const emailArb = fc
       minLength: 1,
       maxLength: 20,
     }),
-    fc.constantFrom("example.com", "test.org", "mail.io")
+    fc.constantFrom("example.com", "test.org", "mail.io"),
   )
   .map(([local, domain]) => `${local}@${domain}`);
 
@@ -119,7 +119,7 @@ export const invalidEmailArb = fc.oneof(
   fc.constant("notanemail"),
   fc.constant("@nodomain"),
   fc.constant("noat.com"),
-  fc.string({ minLength: 1, maxLength: 10 }).filter((s) => !s.includes("@"))
+  fc.string({ minLength: 1, maxLength: 10 }).filter((s) => !s.includes("@")),
 );
 
 // =============================================================================
@@ -145,11 +145,7 @@ export const txHashArb = fc
 /**
  * Generates transaction status values.
  */
-export const txStatusArb = fc.constantFrom(
-  "pending",
-  "confirmed",
-  "failed"
-);
+export const txStatusArb = fc.constantFrom("pending", "confirmed", "failed");
 
 // =============================================================================
 // Payroll Arbitraries
@@ -160,9 +156,8 @@ export const txStatusArb = fc.constantFrom(
  */
 export const payrollStatusArb = fc.constantFrom(
   "PENDING",
-  "PROCESSING",
-  "COMPLETED",
-  "FAILED"
+  "EXECUTED",
+  "FAILED",
 );
 
 /**
@@ -203,7 +198,9 @@ export const payrollItemArb = fc.record({
  */
 export const payrollRunArb = fc.record({
   id: fc.uuid(),
-  runLabel: fc.option(fc.string({ minLength: 1, maxLength: 100 }), { nil: undefined }),
+  runLabel: fc.option(fc.string({ minLength: 1, maxLength: 100 }), {
+    nil: undefined,
+  }),
   totalMnee: positiveMneeAmountArb,
   status: payrollStatusArb,
   txHash: fc.option(txHashArb, { nil: undefined }),
@@ -250,7 +247,7 @@ export const apiErrorArb = fc.record({
     "ORG_001",
     "ORG_002",
     "PAY_001",
-    "PAY_002"
+    "PAY_002",
   ),
   message: fc.string({ minLength: 10, maxLength: 200 }),
   details: fc.option(fc.object(), { nil: undefined }),
@@ -292,5 +289,5 @@ export const invalidContractorFormInputArb = fc.oneof(
     walletAddress: ethereumAddressArb,
     rateAmount: fc.constant("0"),
     payCycle: payCycleArb,
-  })
+  }),
 );

@@ -23,27 +23,30 @@ interface PayrollHistoryTableProps {
   onViewDetails: (run: PayrollRun) => void;
 }
 
-const statusVariants: Record<PayrollRun["status"], "success" | "warning" | "destructive"> = {
-  CONFIRMED: "success",
+const statusVariants: Record<
+  PayrollRun["status"],
+  "success" | "warning" | "destructive"
+> = {
+  EXECUTED: "success",
   PENDING: "warning",
   FAILED: "destructive",
 };
 
 const statusLabels: Record<PayrollRun["status"], string> = {
-  CONFIRMED: "Confirmed",
+  EXECUTED: "Executed",
   PENDING: "Pending",
   FAILED: "Failed",
 };
 
 /**
  * Accessible Payroll History Table component.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Proper table semantics with scope attributes
  * - Action buttons have accessible labels
  * - Status badges use text, not just color
  * - External links indicate they open in new window
- * 
+ *
  * Validates: Requirements 7.1, 7.2, 7.3, 7.5
  */
 export function PayrollHistoryTable({
@@ -68,24 +71,31 @@ export function PayrollHistoryTable({
           <TableHead scope="col">Contractors</TableHead>
           <TableHead scope="col">Status</TableHead>
           <TableHead scope="col">Transaction</TableHead>
-          <TableHead scope="col" className="w-[100px]">Actions</TableHead>
+          <TableHead scope="col" className="w-[100px]">
+            Actions
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {runs.map((run) => (
           <TableRow key={run.id}>
             <TableCell className="font-medium">
-              {formatDate(run.executedAt)}
+              {run.executedAt ? formatDate(run.executedAt) : "Pending"}
             </TableCell>
-            <TableCell>{formatMnee(run.totalAmount)} MNEE</TableCell>
+            <TableCell>{formatMnee(run.totalMnee)} MNEE</TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
-                <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                <span aria-label={`${run.contractorCount} contractors`}>{run.contractorCount}</span>
+                <Users
+                  className="h-4 w-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span aria-label={`${run.contractorCount} contractors`}>
+                  {run.contractorCount}
+                </span>
               </div>
             </TableCell>
             <TableCell>
-              <Badge 
+              <Badge
                 variant={statusVariants[run.status]}
                 aria-label={`Status: ${statusLabels[run.status]}`}
               >
@@ -99,13 +109,20 @@ export function PayrollHistoryTable({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                  aria-label={`View transaction ${formatAddress(run.txHash)} on block explorer (opens in new tab)`}
+                  aria-label={`View transaction ${formatAddress(
+                    run.txHash,
+                  )} on block explorer (opens in new tab)`}
                 >
                   <span className="font-mono">{formatAddress(run.txHash)}</span>
                   <ExternalLink className="h-3 w-3" aria-hidden="true" />
                 </a>
               ) : (
-                <span className="text-muted-foreground text-sm" aria-label="No transaction">—</span>
+                <span
+                  className="text-muted-foreground text-sm"
+                  aria-label="No transaction"
+                >
+                  —
+                </span>
               )}
             </TableCell>
             <TableCell>
@@ -113,7 +130,9 @@ export function PayrollHistoryTable({
                 variant="ghost"
                 size="sm"
                 onClick={() => onViewDetails(run)}
-                aria-label={`View details for payroll run on ${formatDate(run.executedAt)}`}
+                aria-label={`View details for payroll run on ${
+                  run.executedAt ? formatDate(run.executedAt) : "pending"
+                }`}
               >
                 <Eye className="h-4 w-4 mr-1" aria-hidden="true" />
                 Details
@@ -155,13 +174,13 @@ function PayrollHistoryTableSkeleton() {
 
 /**
  * Mobile card layout for responsive design.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Proper heading structure
  * - Action buttons have accessible labels
  * - Touch targets meet 44px minimum
  * - External links indicate they open in new window
- * 
+ *
  * Validates: Requirements 7.1, 7.2, 7.3, 8.1, 8.3
  */
 export function PayrollHistoryCard({
@@ -172,18 +191,23 @@ export function PayrollHistoryCard({
   onViewDetails: (run: PayrollRun) => void;
 }) {
   return (
-    <article 
+    <article
       className="p-4 border rounded-lg space-y-3"
-      aria-label={`Payroll run on ${formatDate(run.executedAt)}`}
+      aria-label={`Payroll run on ${
+        run.executedAt ? formatDate(run.executedAt) : "pending"
+      }`}
     >
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-medium">{formatDate(run.executedAt)}</h3>
+          <h3 className="font-medium">
+            {run.executedAt ? formatDate(run.executedAt) : "Pending"}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            {run.contractorCount} contractor{run.contractorCount !== 1 ? "s" : ""}
+            {run.contractorCount} contractor
+            {run.contractorCount !== 1 ? "s" : ""}
           </p>
         </div>
-        <Badge 
+        <Badge
           variant={statusVariants[run.status]}
           aria-label={`Status: ${statusLabels[run.status]}`}
         >
@@ -193,7 +217,7 @@ export function PayrollHistoryCard({
       <dl>
         <div className="flex items-center justify-between text-sm min-h-[44px]">
           <dt className="text-muted-foreground">Total</dt>
-          <dd className="font-medium">{formatMnee(run.totalAmount)} MNEE</dd>
+          <dd className="font-medium">{formatMnee(run.totalMnee)} MNEE</dd>
         </div>
       </dl>
       {run.txHash && (
@@ -204,7 +228,9 @@ export function PayrollHistoryCard({
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 min-h-[44px] py-2"
-            aria-label={`View transaction ${formatAddress(run.txHash)} on block explorer (opens in new tab)`}
+            aria-label={`View transaction ${formatAddress(
+              run.txHash,
+            )} on block explorer (opens in new tab)`}
           >
             <span className="font-mono">{formatAddress(run.txHash)}</span>
             <ExternalLink className="h-3 w-3" aria-hidden="true" />
@@ -217,7 +243,9 @@ export function PayrollHistoryCard({
           size="default"
           className="w-full min-h-[44px]"
           onClick={() => onViewDetails(run)}
-          aria-label={`View details for payroll run on ${formatDate(run.executedAt)}`}
+          aria-label={`View details for payroll run on ${
+            run.executedAt ? formatDate(run.executedAt) : "pending"
+          }`}
         >
           <Eye className="h-4 w-4 mr-2" aria-hidden="true" />
           View Details

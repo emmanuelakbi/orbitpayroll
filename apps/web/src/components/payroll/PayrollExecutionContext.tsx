@@ -35,20 +35,27 @@ interface PayrollExecutionContextValue {
   gasEstimate: string | null;
   isEstimatingGas: boolean;
   isExecuting: boolean;
-  
+
   // Actions
-  executePayroll: (preview: PayrollPreview, treasuryAddress: string, orgId: string) => void;
+  executePayroll: (
+    preview: PayrollPreview,
+    treasuryAddress: string,
+    orgId: string,
+  ) => void;
   estimateGas: (preview: PayrollPreview, treasuryAddress: string) => void;
   closeTxModal: () => void;
   reset: () => void;
 }
 
-const PayrollExecutionContext = React.createContext<PayrollExecutionContextValue | null>(null);
+const PayrollExecutionContext =
+  React.createContext<PayrollExecutionContextValue | null>(null);
 
 export function usePayrollExecution() {
   const context = React.useContext(PayrollExecutionContext);
   if (!context) {
-    throw new Error("usePayrollExecution must be used within PayrollExecutionProvider");
+    throw new Error(
+      "usePayrollExecution must be used within PayrollExecutionProvider",
+    );
   }
   return context;
 }
@@ -57,19 +64,23 @@ interface PayrollExecutionProviderProps {
   children: React.ReactNode;
 }
 
-export function PayrollExecutionProvider({ children }: PayrollExecutionProviderProps) {
+export function PayrollExecutionProvider({
+  children,
+}: PayrollExecutionProviderProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { address } = useAccount();
-  
-  const [transactionStatus, setTransactionStatus] = React.useState<TransactionStatus>({
-    status: "idle",
-  });
+
+  const [transactionStatus, setTransactionStatus] =
+    React.useState<TransactionStatus>({
+      status: "idle",
+    });
   const [showTxModal, setShowTxModal] = React.useState(false);
   const [gasEstimate, setGasEstimate] = React.useState<string | null>(null);
   const [isEstimatingGas, setIsEstimatingGas] = React.useState(false);
   const [pendingOrgId, setPendingOrgId] = React.useState<string | null>(null);
-  const [pendingPreview, setPendingPreview] = React.useState<PayrollPreview | null>(null);
+  const [pendingPreview, setPendingPreview] =
+    React.useState<PayrollPreview | null>(null);
 
   // Write contract hook
   const {
@@ -126,7 +137,7 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
       setIsEstimatingGas(true);
       try {
         const recipients = preview.contractors.map(
-          (c) => c.walletAddress as `0x${string}`
+          (c) => c.walletAddress as `0x${string}`,
         );
         const amounts = preview.contractors.map((c) => BigInt(c.amount));
         const runId = generateRunId();
@@ -140,10 +151,12 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
 
         // For now, provide a rough estimate since we can't call useEstimateGas conditionally
         // In production, you'd want to use the actual gas estimation
-        const estimatedGas = BigInt(100000 + preview.contractors.length * 50000);
+        const estimatedGas = BigInt(
+          100000 + preview.contractors.length * 50000,
+        );
         const gasPrice = BigInt(20000000000); // 20 gwei estimate
         const totalCost = estimatedGas * gasPrice;
-        
+
         setGasEstimate(`~${formatUnits(totalCost, 18)} ETH`);
       } catch (error) {
         console.error("Gas estimation failed:", error);
@@ -152,7 +165,7 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
         setIsEstimatingGas(false);
       }
     },
-    [address, generateRunId]
+    [address, generateRunId],
   );
 
   // Execute payroll
@@ -165,10 +178,13 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
       setPendingOrgId(orgId);
       setPendingPreview(preview);
       setShowTxModal(true);
-      setTransactionStatus({ status: "pending", message: "Requesting signature..." });
+      setTransactionStatus({
+        status: "pending",
+        message: "Requesting signature...",
+      });
 
       const recipients = preview.contractors.map(
-        (c) => c.walletAddress as `0x${string}`
+        (c) => c.walletAddress as `0x${string}`,
       );
       const amounts = preview.contractors.map((c) => BigInt(c.amount));
       const runId = generateRunId();
@@ -187,10 +203,10 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
               error: error.message || "Transaction failed",
             });
           },
-        }
+        },
       );
     },
-    [generateRunId, writeContract]
+    [generateRunId, writeContract],
   );
 
   // Update transaction status based on tx state
@@ -204,9 +220,9 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
   React.useEffect(() => {
     if (isConfirmed && txHash && pendingOrgId && pendingPreview) {
       // Record the payroll run in the backend
-      const payments = pendingPreview.contractors.map((c) => ({
+      const items = pendingPreview.contractors.map((c) => ({
         contractorId: c.id,
-        amount: c.amount,
+        amountMnee: c.amount,
       }));
 
       recordPayrollMutation.mutate(
@@ -214,7 +230,7 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
           orgId: pendingOrgId,
           data: {
             txHash,
-            payments,
+            items,
           },
         },
         {
@@ -227,10 +243,16 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
             console.error("Failed to record payroll run:", error);
             setTransactionStatus({ status: "success", txHash });
           },
-        }
+        },
       );
     }
-  }, [isConfirmed, txHash, pendingOrgId, pendingPreview, recordPayrollMutation]);
+  }, [
+    isConfirmed,
+    txHash,
+    pendingOrgId,
+    pendingPreview,
+    recordPayrollMutation,
+  ]);
 
   // Handle transaction error
   React.useEffect(() => {
@@ -245,7 +267,7 @@ export function PayrollExecutionProvider({ children }: PayrollExecutionProviderP
   // Close transaction modal
   const closeTxModal = React.useCallback(() => {
     setShowTxModal(false);
-    
+
     if (transactionStatus.status === "success") {
       // Navigate to history page after successful payroll
       router.push("/dashboard/history");

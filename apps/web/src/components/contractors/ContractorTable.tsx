@@ -27,18 +27,18 @@ interface ContractorTableProps {
 
 const payCycleLabels: Record<PayCycle, string> = {
   WEEKLY: "Weekly",
-  BIWEEKLY: "Bi-weekly",
+  BI_WEEKLY: "Bi-weekly",
   MONTHLY: "Monthly",
 };
 
 /**
  * Accessible Contractor Table component.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Proper table semantics with scope attributes
  * - Action buttons have accessible labels
  * - Status badges use text, not just color
- * 
+ *
  * Validates: Requirements 7.1, 7.2, 7.3, 7.5
  */
 export function ContractorTable({
@@ -65,7 +65,11 @@ export function ContractorTable({
           <TableHead scope="col">Rate</TableHead>
           <TableHead scope="col">Pay Cycle</TableHead>
           <TableHead scope="col">Status</TableHead>
-          {canManage && <TableHead scope="col" className="w-[100px]">Actions</TableHead>}
+          {canManage && (
+            <TableHead scope="col" className="w-[100px]">
+              Actions
+            </TableHead>
+          )}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -83,15 +87,21 @@ export function ContractorTable({
             <TableCell>{payCycleLabels[contractor.payCycle]}</TableCell>
             <TableCell>
               <Badge
-                variant={contractor.status === "ACTIVE" ? "success" : "secondary"}
-                aria-label={`Status: ${contractor.status}`}
+                variant={contractor.active ? "success" : "secondary"}
+                aria-label={`Status: ${
+                  contractor.active ? "Active" : "Archived"
+                }`}
               >
-                {contractor.status}
+                {contractor.active ? "Active" : "Archived"}
               </Badge>
             </TableCell>
             {canManage && (
               <TableCell>
-                <div className="flex items-center gap-2" role="group" aria-label={`Actions for ${contractor.name}`}>
+                <div
+                  className="flex items-center gap-2"
+                  role="group"
+                  aria-label={`Actions for ${contractor.name}`}
+                >
                   <Button
                     variant="ghost"
                     size="icon"
@@ -100,7 +110,7 @@ export function ContractorTable({
                   >
                     <Pencil className="h-4 w-4" aria-hidden="true" />
                   </Button>
-                  {contractor.status === "ACTIVE" && (
+                  {contractor.active && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -150,12 +160,12 @@ function ContractorTableSkeleton() {
 
 /**
  * Mobile card layout for responsive design.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Proper heading structure
  * - Action buttons have accessible labels
  * - Touch targets meet 44px minimum
- * 
+ *
  * Validates: Requirements 7.1, 7.2, 7.3
  */
 export function ContractorCard({
@@ -170,7 +180,10 @@ export function ContractorCard({
   canManage?: boolean;
 }) {
   return (
-    <article className="p-4 border rounded-lg space-y-3" aria-label={`Contractor: ${contractor.name}`}>
+    <article
+      className="p-4 border rounded-lg space-y-3"
+      aria-label={`Contractor: ${contractor.name}`}
+    >
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-medium">{contractor.name}</h3>
@@ -180,10 +193,10 @@ export function ContractorCard({
           </p>
         </div>
         <Badge
-          variant={contractor.status === "ACTIVE" ? "success" : "secondary"}
-          aria-label={`Status: ${contractor.status}`}
+          variant={contractor.active ? "success" : "secondary"}
+          aria-label={`Status: ${contractor.active ? "Active" : "Archived"}`}
         >
-          {contractor.status}
+          {contractor.active ? "Active" : "Archived"}
         </Badge>
       </div>
       <dl>
@@ -199,7 +212,11 @@ export function ContractorCard({
         </div>
       </dl>
       {canManage && (
-        <div className="flex gap-2 pt-2 border-t" role="group" aria-label={`Actions for ${contractor.name}`}>
+        <div
+          className="flex gap-2 pt-2 border-t"
+          role="group"
+          aria-label={`Actions for ${contractor.name}`}
+        >
           <Button
             variant="outline"
             size="default"
@@ -210,7 +227,7 @@ export function ContractorCard({
             <Pencil className="h-4 w-4 mr-2" aria-hidden="true" />
             Edit
           </Button>
-          {contractor.status === "ACTIVE" && (
+          {contractor.active && (
             <Button
               variant="outline"
               size="default"

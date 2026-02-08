@@ -35,13 +35,11 @@ interface FormErrors {
 
 const PAY_CYCLE_OPTIONS = [
   { value: "WEEKLY", label: "Weekly" },
-  { value: "BIWEEKLY", label: "Bi-weekly" },
+  { value: "BI_WEEKLY", label: "Bi-weekly" },
   { value: "MONTHLY", label: "Monthly" },
 ];
 
-const CURRENCY_OPTIONS = [
-  { value: "MNEE", label: "MNEE" },
-];
+const CURRENCY_OPTIONS = [{ value: "MNEE", label: "MNEE" }];
 
 /**
  * Validate Ethereum wallet address format
@@ -61,36 +59,35 @@ export function isValidRateAmount(amount: string): boolean {
 
 /**
  * Convert rate amount to wei string (18 decimals)
+ * NOTE: API expects a plain number, not wei. This is kept for reference only.
  */
-function rateToWei(amount: string): string {
-  const num = parseFloat(amount);
-  // Convert to wei (18 decimals)
-  const wei = BigInt(Math.floor(num * 1e18));
-  return wei.toString();
-}
+// function rateToWei(amount: string): string {
+//   const num = parseFloat(amount);
+//   const wei = BigInt(Math.floor(num * 1e18));
+//   return wei.toString();
+// }
 
 /**
- * Convert wei string to display amount
+ * Convert API rate string to display amount.
+ * API returns decimal strings like "1000.00000000".
  */
-function weiToRate(wei: string): string {
-  const value = BigInt(wei);
-  const divisor = BigInt(1e18);
-  const integerPart = value / divisor;
-  const fractionalPart = value % divisor;
-  const fractionalStr = fractionalPart.toString().padStart(18, "0").slice(0, 2);
-  return `${integerPart}.${fractionalStr}`;
+function rateToDisplay(rate: string): string {
+  const num = parseFloat(rate);
+  if (isNaN(num)) return "";
+  // Remove trailing zeros but keep at least 2 decimal places
+  return num % 1 === 0 ? num.toString() : parseFloat(num.toFixed(2)).toString();
 }
 
 /**
  * Accessible Contractor Form Modal component.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Labels properly associated with inputs via htmlFor/id
  * - Error messages announced via aria-describedby and role="alert"
  * - Required fields indicated via aria-required
  * - Invalid state indicated via aria-invalid
  * - Auto-focus on first input when modal opens
- * 
+ *
  * Validates: Requirements 7.1, 7.2, 7.3
  */
 export function ContractorFormModal({
@@ -119,7 +116,7 @@ export function ContractorFormModal({
       if (contractor) {
         setName(contractor.name);
         setWalletAddress(contractor.walletAddress);
-        setRateAmount(weiToRate(contractor.rateAmount));
+        setRateAmount(rateToDisplay(contractor.rateAmount));
         setRateCurrency(contractor.rateCurrency);
         setPayCycle(contractor.payCycle);
       } else {
@@ -131,7 +128,7 @@ export function ContractorFormModal({
       }
       setErrors({});
       setTouched({});
-      
+
       // Auto-focus first input when modal opens (WCAG 7.2)
       requestAnimationFrame(() => {
         nameInputRef.current?.focus();
@@ -144,7 +141,8 @@ export function ContractorFormModal({
     switch (field) {
       case "name":
         if (!value.trim()) return "Name is required";
-        if (value.trim().length < 2) return "Name must be at least 2 characters";
+        if (value.trim().length < 2)
+          return "Name must be at least 2 characters";
         return undefined;
 
       case "walletAddress":
@@ -169,7 +167,7 @@ export function ContractorFormModal({
   // Handle field blur for validation
   const handleBlur = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    
+
     let value = "";
     switch (field) {
       case "name":
@@ -233,7 +231,7 @@ export function ContractorFormModal({
     const data: ContractorInput = {
       name: name.trim(),
       walletAddress: walletAddress.trim(),
-      rateAmount: rateToWei(rateAmount),
+      rateAmount: parseFloat(rateAmount),
       rateCurrency,
       payCycle,
     };
@@ -260,7 +258,9 @@ export function ContractorFormModal({
           <div className="space-y-2">
             <Label htmlFor="contractor-name">
               Name
-              <span className="text-destructive ml-1" aria-hidden="true">*</span>
+              <span className="text-destructive ml-1" aria-hidden="true">
+                *
+              </span>
               <span className="sr-only">(required)</span>
             </Label>
             <Input
@@ -272,11 +272,19 @@ export function ContractorFormModal({
               placeholder="John Doe"
               aria-required="true"
               aria-invalid={!!(errors.name && touched.name)}
-              aria-describedby={errors.name && touched.name ? "name-error" : undefined}
-              className={errors.name && touched.name ? "border-destructive" : ""}
+              aria-describedby={
+                errors.name && touched.name ? "name-error" : undefined
+              }
+              className={
+                errors.name && touched.name ? "border-destructive" : ""
+              }
             />
             {errors.name && touched.name && (
-              <p id="name-error" className="text-sm text-destructive flex items-center gap-1" role="alert">
+              <p
+                id="name-error"
+                className="text-sm text-destructive flex items-center gap-1"
+                role="alert"
+              >
                 <AlertCircle className="h-3 w-3" aria-hidden="true" />
                 {errors.name}
               </p>
@@ -287,7 +295,9 @@ export function ContractorFormModal({
           <div className="space-y-2">
             <Label htmlFor="contractor-wallet">
               Wallet Address
-              <span className="text-destructive ml-1" aria-hidden="true">*</span>
+              <span className="text-destructive ml-1" aria-hidden="true">
+                *
+              </span>
               <span className="sr-only">(required)</span>
             </Label>
             <Input
@@ -298,14 +308,29 @@ export function ContractorFormModal({
               placeholder="0x..."
               aria-required="true"
               aria-invalid={!!(errors.walletAddress && touched.walletAddress)}
-              aria-describedby={errors.walletAddress && touched.walletAddress ? "wallet-error" : "wallet-hint"}
-              className={errors.walletAddress && touched.walletAddress ? "border-destructive" : ""}
+              aria-describedby={
+                errors.walletAddress && touched.walletAddress
+                  ? "wallet-error"
+                  : "wallet-hint"
+              }
+              className={
+                errors.walletAddress && touched.walletAddress
+                  ? "border-destructive"
+                  : ""
+              }
             />
-            <p id="wallet-hint" className="text-xs text-muted-foreground sr-only">
+            <p
+              id="wallet-hint"
+              className="text-xs text-muted-foreground sr-only"
+            >
               Enter an Ethereum wallet address starting with 0x
             </p>
             {errors.walletAddress && touched.walletAddress && (
-              <p id="wallet-error" className="text-sm text-destructive flex items-center gap-1" role="alert">
+              <p
+                id="wallet-error"
+                className="text-sm text-destructive flex items-center gap-1"
+                role="alert"
+              >
                 <AlertCircle className="h-3 w-3" aria-hidden="true" />
                 {errors.walletAddress}
               </p>
@@ -316,7 +341,9 @@ export function ContractorFormModal({
           <div className="space-y-2">
             <Label htmlFor="contractor-rate">
               Rate Amount
-              <span className="text-destructive ml-1" aria-hidden="true">*</span>
+              <span className="text-destructive ml-1" aria-hidden="true">
+                *
+              </span>
               <span className="sr-only">(required)</span>
             </Label>
             <div className="flex gap-2">
@@ -330,8 +357,16 @@ export function ContractorFormModal({
                 placeholder="1000.00"
                 aria-required="true"
                 aria-invalid={!!(errors.rateAmount && touched.rateAmount)}
-                aria-describedby={errors.rateAmount && touched.rateAmount ? "rate-error" : undefined}
-                className={errors.rateAmount && touched.rateAmount ? "border-destructive flex-1" : "flex-1"}
+                aria-describedby={
+                  errors.rateAmount && touched.rateAmount
+                    ? "rate-error"
+                    : undefined
+                }
+                className={
+                  errors.rateAmount && touched.rateAmount
+                    ? "border-destructive flex-1"
+                    : "flex-1"
+                }
               />
               <Select
                 value={rateCurrency}
@@ -342,7 +377,11 @@ export function ContractorFormModal({
               />
             </div>
             {errors.rateAmount && touched.rateAmount && (
-              <p id="rate-error" className="text-sm text-destructive flex items-center gap-1" role="alert">
+              <p
+                id="rate-error"
+                className="text-sm text-destructive flex items-center gap-1"
+                role="alert"
+              >
                 <AlertCircle className="h-3 w-3" aria-hidden="true" />
                 {errors.rateAmount}
               </p>
@@ -363,7 +402,11 @@ export function ContractorFormModal({
 
           {/* API Error */}
           {error && (
-            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg" role="alert" aria-live="polite">
+            <div
+              className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg"
+              role="alert"
+              aria-live="polite"
+            >
               <p className="text-sm text-destructive flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 {error.message || "An error occurred. Please try again."}
@@ -380,8 +423,17 @@ export function ContractorFormModal({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
+            >
+              {isSubmitting && (
+                <Loader2
+                  className="h-4 w-4 mr-2 animate-spin"
+                  aria-hidden="true"
+                />
+              )}
               {isEditing ? "Save Changes" : "Add Contractor"}
             </Button>
           </DialogFooter>

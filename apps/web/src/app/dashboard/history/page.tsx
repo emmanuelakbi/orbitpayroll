@@ -43,10 +43,7 @@ export default function PayrollHistoryPage() {
   });
 
   // Fetch selected run details
-  const {
-    data: runDetail,
-    isLoading: detailLoading,
-  } = useQuery({
+  const { data: runDetail, isLoading: detailLoading } = useQuery({
     queryKey: ["payroll-run-detail", currentOrg?.id, selectedRun?.id],
     queryFn: () => api.payroll.get(currentOrg!.id, selectedRun!.id),
     enabled: !!currentOrg?.id && !!selectedRun?.id && detailModalOpen,
@@ -55,7 +52,7 @@ export default function PayrollHistoryPage() {
 
   const isLoading = orgLoading || runsLoading;
   const runs = runsData?.data ?? [];
-  const pagination = runsData?.pagination;
+  const pagination = runsData?.meta;
 
   // Handle view details
   const handleViewDetails = React.useCallback((run: PayrollRun) => {
@@ -68,17 +65,19 @@ export default function PayrollHistoryPage() {
     if (!runDetail) return;
 
     const headers = ["Contractor Name", "Wallet Address", "Amount (MNEE)"];
-    const rows = runDetail.payments.map((payment) => [
-      payment.contractorName,
-      payment.walletAddress,
-      formatMnee(payment.amount),
+    const rows = runDetail.items.map((item) => [
+      item.contractorName,
+      item.walletAddress,
+      formatMnee(item.amountMnee),
     ]);
 
     const csvContent = [
       // Metadata
       `Payroll Run: ${runDetail.id}`,
-      `Date: ${formatDate(runDetail.executedAt)}`,
-      `Total: ${formatMnee(runDetail.totalAmount)} MNEE`,
+      `Date: ${
+        runDetail.executedAt ? formatDate(runDetail.executedAt) : "Pending"
+      }`,
+      `Total: ${formatMnee(runDetail.totalMnee)} MNEE`,
       `Status: ${runDetail.status}`,
       runDetail.txHash ? `Transaction: ${runDetail.txHash}` : "",
       "",
@@ -91,7 +90,9 @@ export default function PayrollHistoryPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `payroll-run-${runDetail.id}-${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `payroll-run-${runDetail.id}-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -164,22 +165,23 @@ export default function PayrollHistoryPage() {
 
             {/* Mobile Cards */}
             <div className="md:hidden space-y-4">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="p-4 border rounded-lg animate-pulse">
-                    <div className="h-4 bg-muted rounded w-1/2 mb-2" />
-                    <div className="h-3 bg-muted rounded w-1/3" />
-                  </div>
-                ))
-              ) : (
-                runs.map((run) => (
-                  <PayrollHistoryCard
-                    key={run.id}
-                    run={run}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))
-              )}
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="p-4 border rounded-lg animate-pulse"
+                    >
+                      <div className="h-4 bg-muted rounded w-1/2 mb-2" />
+                      <div className="h-3 bg-muted rounded w-1/3" />
+                    </div>
+                  ))
+                : runs.map((run) => (
+                    <PayrollHistoryCard
+                      key={run.id}
+                      run={run}
+                      onViewDetails={handleViewDetails}
+                    />
+                  ))}
             </div>
 
             {/* Pagination */}

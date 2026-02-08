@@ -14,15 +14,17 @@ import { ContractorTable, ContractorCard } from "./ContractorTable";
 import type { Contractor } from "@/lib/api/types";
 
 // Mock contractor data
-const createMockContractor = (overrides: Partial<Contractor> = {}): Contractor => ({
+const createMockContractor = (
+  overrides: Partial<Contractor> = {},
+): Contractor => ({
   id: "contractor-1",
   name: "John Doe",
   walletAddress: "0x1234567890123456789012345678901234567890",
   rateAmount: "1000000000000000000000", // 1000 MNEE in wei
   rateCurrency: "MNEE",
   payCycle: "MONTHLY",
-  status: "ACTIVE",
-  organizationId: "org-1",
+  active: true,
+  orgId: "org-1",
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
   ...overrides,
@@ -46,20 +48,20 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       // Check contractor name is displayed
       expect(screen.getByText("John Doe")).toBeInTheDocument();
-      
+
       // Check wallet address is truncated (formatAddress shows 0x1234...7890)
       expect(screen.getByText("0x1234...7890")).toBeInTheDocument();
-      
+
       // Check pay cycle is displayed
       expect(screen.getByText("Monthly")).toBeInTheDocument();
-      
+
       // Check status badge is displayed
-      expect(screen.getByText("ACTIVE")).toBeInTheDocument();
+      expect(screen.getByText("Active")).toBeInTheDocument();
     });
 
     it("renders multiple contractors", () => {
@@ -75,7 +77,7 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       expect(screen.getByText("Alice")).toBeInTheDocument();
@@ -90,7 +92,7 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       expect(container.firstChild).toBeNull();
@@ -103,7 +105,7 @@ describe("ContractorTable", () => {
           isLoading={true}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       // Skeleton should be rendered (multiple skeleton elements)
@@ -120,7 +122,7 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       expect(screen.getByText("Name")).toBeInTheDocument();
@@ -142,14 +144,14 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       expect(screen.getByText("Weekly")).toBeInTheDocument();
     });
 
-    it("displays Bi-weekly for BIWEEKLY pay cycle", () => {
-      const contractors = [createMockContractor({ payCycle: "BIWEEKLY" })];
+    it("displays Bi-weekly for BI_WEEKLY pay cycle", () => {
+      const contractors = [createMockContractor({ payCycle: "BI_WEEKLY" })];
 
       render(
         <ContractorTable
@@ -157,7 +159,7 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       expect(screen.getByText("Bi-weekly")).toBeInTheDocument();
@@ -172,7 +174,7 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
       expect(screen.getByText("Monthly")).toBeInTheDocument();
@@ -181,7 +183,7 @@ describe("ContractorTable", () => {
 
   describe("Status Badge", () => {
     it("renders success variant for ACTIVE status", () => {
-      const contractors = [createMockContractor({ status: "ACTIVE" })];
+      const contractors = [createMockContractor({ active: true })];
 
       render(
         <ContractorTable
@@ -189,15 +191,15 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
-      const badge = screen.getByText("ACTIVE");
+      const badge = screen.getByText("Active");
       expect(badge).toBeInTheDocument();
     });
 
     it("renders secondary variant for ARCHIVED status", () => {
-      const contractors = [createMockContractor({ status: "ARCHIVED" })];
+      const contractors = [createMockContractor({ active: false })];
 
       render(
         <ContractorTable
@@ -205,10 +207,10 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
-      const badge = screen.getByText("ARCHIVED");
+      const badge = screen.getByText("Archived");
       expect(badge).toBeInTheDocument();
     });
   });
@@ -224,10 +226,12 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
-      const editButton = screen.getByRole("button", { name: `Edit ${contractor.name}` });
+      const editButton = screen.getByRole("button", {
+        name: `Edit ${contractor.name}`,
+      });
       fireEvent.click(editButton);
 
       expect(mockOnEdit).toHaveBeenCalledTimes(1);
@@ -235,7 +239,7 @@ describe("ContractorTable", () => {
     });
 
     it("calls onArchive when archive button is clicked", () => {
-      const contractor = createMockContractor({ status: "ACTIVE" });
+      const contractor = createMockContractor({ active: true });
       const contractors = [contractor];
 
       render(
@@ -244,10 +248,12 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
-      const archiveButton = screen.getByRole("button", { name: `Archive ${contractor.name}` });
+      const archiveButton = screen.getByRole("button", {
+        name: `Archive ${contractor.name}`,
+      });
       fireEvent.click(archiveButton);
 
       expect(mockOnArchive).toHaveBeenCalledTimes(1);
@@ -255,7 +261,7 @@ describe("ContractorTable", () => {
     });
 
     it("does not show archive button for ARCHIVED contractors", () => {
-      const contractor = createMockContractor({ status: "ARCHIVED" });
+      const contractor = createMockContractor({ active: false });
       const contractors = [contractor];
 
       render(
@@ -264,10 +270,12 @@ describe("ContractorTable", () => {
           isLoading={false}
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
-        />
+        />,
       );
 
-      expect(screen.queryByRole("button", { name: `Archive ${contractor.name}` })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: `Archive ${contractor.name}` }),
+      ).not.toBeInTheDocument();
     });
 
     it("hides action buttons when canManage is false", () => {
@@ -281,11 +289,15 @@ describe("ContractorTable", () => {
           onEdit={mockOnEdit}
           onArchive={mockOnArchive}
           canManage={false}
-        />
+        />,
       );
 
-      expect(screen.queryByRole("button", { name: `Edit ${contractor.name}` })).not.toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: `Archive ${contractor.name}` })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: `Edit ${contractor.name}` }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: `Archive ${contractor.name}` }),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText("Actions")).not.toBeInTheDocument();
     });
   });
@@ -307,12 +319,12 @@ describe("ContractorCard", () => {
         contractor={contractor}
         onEdit={mockOnEdit}
         onArchive={mockOnArchive}
-      />
+      />,
     );
 
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("0x1234...7890")).toBeInTheDocument();
-    expect(screen.getByText("ACTIVE")).toBeInTheDocument();
+    expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByText("Monthly")).toBeInTheDocument();
   });
 
@@ -324,7 +336,7 @@ describe("ContractorCard", () => {
         contractor={contractor}
         onEdit={mockOnEdit}
         onArchive={mockOnArchive}
-      />
+      />,
     );
 
     const editButton = screen.getByRole("button", { name: /edit/i });
@@ -334,14 +346,14 @@ describe("ContractorCard", () => {
   });
 
   it("calls onArchive when Archive button is clicked", () => {
-    const contractor = createMockContractor({ status: "ACTIVE" });
+    const contractor = createMockContractor({ active: true });
 
     render(
       <ContractorCard
         contractor={contractor}
         onEdit={mockOnEdit}
         onArchive={mockOnArchive}
-      />
+      />,
     );
 
     const archiveButton = screen.getByRole("button", { name: /archive/i });
@@ -351,17 +363,19 @@ describe("ContractorCard", () => {
   });
 
   it("does not show Archive button for ARCHIVED contractors", () => {
-    const contractor = createMockContractor({ status: "ARCHIVED" });
+    const contractor = createMockContractor({ active: false });
 
     render(
       <ContractorCard
         contractor={contractor}
         onEdit={mockOnEdit}
         onArchive={mockOnArchive}
-      />
+      />,
     );
 
-    expect(screen.queryByRole("button", { name: /archive/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /archive/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("hides action buttons when canManage is false", () => {
@@ -373,10 +387,14 @@ describe("ContractorCard", () => {
         onEdit={mockOnEdit}
         onArchive={mockOnArchive}
         canManage={false}
-      />
+      />,
     );
 
-    expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /archive/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /edit/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /archive/i }),
+    ).not.toBeInTheDocument();
   });
 });

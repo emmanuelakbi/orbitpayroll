@@ -60,7 +60,7 @@ interface MockOrg {
  * Creates a mock contractor object.
  */
 export function createMockContractor(
-  overrides: Partial<MockContractor> = {}
+  overrides: Partial<MockContractor> = {},
 ): MockContractor {
   return {
     id: "contractor-123",
@@ -91,7 +91,7 @@ interface MockContractor {
  * Creates a mock payroll run object.
  */
 export function createMockPayrollRun(
-  overrides: Partial<MockPayrollRun> = {}
+  overrides: Partial<MockPayrollRun> = {},
 ): MockPayrollRun {
   return {
     id: "payroll-123",
@@ -110,7 +110,7 @@ interface MockPayrollRun {
   orgId: string;
   runLabel?: string;
   totalMnee: string;
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "EXECUTED" | "FAILED";
   txHash?: string;
   createdAt: string;
   items: MockPayrollItem[];
@@ -159,7 +159,7 @@ export function createMockResponse<T>(data: T, status = 200): Response {
 export function createMockErrorResponse(
   code: string,
   message: string,
-  status = 400
+  status = 400,
 ): Response {
   return createMockResponse({ code, message }, status);
 }
@@ -193,7 +193,7 @@ export function resetFetchMock(): void {
  * Creates a mock wallet connection state.
  */
 export function createMockWalletState(
-  overrides: Partial<MockWalletState> = {}
+  overrides: Partial<MockWalletState> = {},
 ): MockWalletState {
   return {
     isConnected: false,
@@ -216,7 +216,7 @@ interface MockWalletState {
  */
 export function createConnectedWalletState(
   address = "0x" + "1".repeat(40),
-  chainId = 11155111
+  chainId = 11155111,
 ): MockWalletState {
   return {
     isConnected: true,

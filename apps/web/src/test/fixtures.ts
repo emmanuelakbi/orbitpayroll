@@ -154,7 +154,8 @@ export const CONTRACTOR_FIXTURES = {
 } as const;
 
 export type ContractorFixtureKey = keyof typeof CONTRACTOR_FIXTURES;
-export type ContractorFixture = (typeof CONTRACTOR_FIXTURES)[ContractorFixtureKey];
+export type ContractorFixture =
+  (typeof CONTRACTOR_FIXTURES)[ContractorFixtureKey];
 
 // =============================================================================
 // Payroll Run Fixtures
@@ -163,7 +164,7 @@ export type ContractorFixture = (typeof CONTRACTOR_FIXTURES)[ContractorFixtureKe
 /**
  * Payroll status type for frontend.
  */
-export type PayrollStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+export type PayrollStatus = "PENDING" | "EXECUTED" | "FAILED";
 
 /**
  * Deterministic payroll run fixtures for frontend testing.
@@ -175,8 +176,9 @@ export const PAYROLL_RUN_FIXTURES = {
     orgId: ORG_FIXTURES.primary.id,
     runLabel: "January 2026 Payroll",
     totalMnee: "8500.00000000",
-    status: "COMPLETED" as PayrollStatus,
-    txHash: "0xabcd111111111111111111111111111111111111111111111111111111111111",
+    status: "EXECUTED" as PayrollStatus,
+    txHash:
+      "0xabcd111111111111111111111111111111111111111111111111111111111111",
     createdAt: "2026-01-15T00:00:00.000Z",
     items: [
       {
@@ -244,8 +246,9 @@ export const PAYROLL_RUN_FIXTURES = {
     orgId: ORG_FIXTURES.primary.id,
     runLabel: "Processing Payroll",
     totalMnee: "5000.00000000",
-    status: "PROCESSING" as PayrollStatus,
-    txHash: "0xef01111111111111111111111111111111111111111111111111111111111111",
+    status: "PENDING" as PayrollStatus,
+    txHash:
+      "0xef01111111111111111111111111111111111111111111111111111111111111",
     createdAt: "2026-01-20T00:00:00.000Z",
     items: [
       {
@@ -283,7 +286,8 @@ export const PAYROLL_RUN_FIXTURES = {
 } as const;
 
 export type PayrollRunFixtureKey = keyof typeof PAYROLL_RUN_FIXTURES;
-export type PayrollRunFixture = (typeof PAYROLL_RUN_FIXTURES)[PayrollRunFixtureKey];
+export type PayrollRunFixture =
+  (typeof PAYROLL_RUN_FIXTURES)[PayrollRunFixtureKey];
 
 // =============================================================================
 // Treasury Fixtures
@@ -332,7 +336,8 @@ export const TRANSACTION_FIXTURES = {
     id: "tx-deposit-001",
     type: "DEPOSIT" as const,
     amount: "10000.00000000",
-    txHash: "0xdep1111111111111111111111111111111111111111111111111111111111111",
+    txHash:
+      "0xdep1111111111111111111111111111111111111111111111111111111111111",
     status: "confirmed" as const,
     timestamp: "2026-01-10T10:00:00.000Z",
   },
@@ -341,7 +346,8 @@ export const TRANSACTION_FIXTURES = {
     id: "tx-withdrawal-001",
     type: "WITHDRAWAL" as const,
     amount: "5000.00000000",
-    txHash: "0xwith111111111111111111111111111111111111111111111111111111111111",
+    txHash:
+      "0xwith111111111111111111111111111111111111111111111111111111111111",
     status: "pending" as const,
     timestamp: "2026-01-15T14:00:00.000Z",
   },
@@ -359,14 +365,16 @@ export const TRANSACTION_FIXTURES = {
     id: "tx-failed-001",
     type: "PAYROLL" as const,
     amount: "5000.00000000",
-    txHash: "0xfail111111111111111111111111111111111111111111111111111111111111",
+    txHash:
+      "0xfail111111111111111111111111111111111111111111111111111111111111",
     status: "failed" as const,
     timestamp: "2026-01-10T09:00:00.000Z",
   },
 } as const;
 
 export type TransactionFixtureKey = keyof typeof TRANSACTION_FIXTURES;
-export type TransactionFixture = (typeof TRANSACTION_FIXTURES)[TransactionFixtureKey];
+export type TransactionFixture =
+  (typeof TRANSACTION_FIXTURES)[TransactionFixtureKey];
 
 // =============================================================================
 // Notification Fixtures
@@ -412,7 +420,8 @@ export const NOTIFICATION_FIXTURES = {
 } as const;
 
 export type NotificationFixtureKey = keyof typeof NOTIFICATION_FIXTURES;
-export type NotificationFixture = (typeof NOTIFICATION_FIXTURES)[NotificationFixtureKey];
+export type NotificationFixture =
+  (typeof NOTIFICATION_FIXTURES)[NotificationFixtureKey];
 
 // =============================================================================
 // Fixture Collections
@@ -437,7 +446,7 @@ export const ALL_CONTRACTOR_FIXTURES = Object.values(CONTRACTOR_FIXTURES);
  * Active contractors only.
  */
 export const ACTIVE_CONTRACTOR_FIXTURES = ALL_CONTRACTOR_FIXTURES.filter(
-  (c) => c.active
+  (c) => c.active,
 );
 
 /**
@@ -450,7 +459,6 @@ export const ALL_PAYROLL_RUN_FIXTURES = Object.values(PAYROLL_RUN_FIXTURES);
  */
 export const ALL_NOTIFICATION_FIXTURES = Object.values(NOTIFICATION_FIXTURES);
 
-
 // =============================================================================
 // Factory Functions
 // =============================================================================
@@ -459,7 +467,7 @@ export const ALL_NOTIFICATION_FIXTURES = Object.values(NOTIFICATION_FIXTURES);
  * Factory function to create a user fixture with custom overrides.
  */
 export function createUserFixture(
-  overrides: Partial<UserFixture> & { walletAddress: string }
+  overrides: Partial<UserFixture> & { walletAddress: string },
 ): UserFixture {
   return {
     id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -477,7 +485,7 @@ export function createOrgFixture(
     name: string;
     treasuryAddress: string;
     ownerId: string;
-  }
+  },
 ): OrgFixture {
   return {
     id: `org-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -494,7 +502,7 @@ export function createContractorFixture(
     orgId: string;
     name: string;
     walletAddress: string;
-  }
+  },
 ): ContractorFixture {
   return {
     id: `contractor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -515,7 +523,7 @@ export function createPayrollRunFixture(
     orgId: string;
     totalMnee: string;
   },
-  items: PayrollRunFixture["items"] = []
+  items: PayrollRunFixture["items"] = [],
 ): PayrollRunFixture {
   const id = `payroll-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   return {
@@ -538,7 +546,7 @@ export function createNotificationFixture(
     type: string;
     title: string;
     message: string;
-  }
+  },
 ): NotificationFixture {
   return {
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -557,7 +565,7 @@ export function createTransactionFixture(
     type: "DEPOSIT" | "WITHDRAWAL" | "PAYROLL";
     amount: string;
     txHash: string;
-  }
+  },
 ): TransactionFixture {
   return {
     id: `tx-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -577,7 +585,7 @@ export function createTransactionFixture(
 export function createContractorBatch(
   orgId: string,
   count: number,
-  baseWalletPrefix = "0xbatch"
+  baseWalletPrefix = "0xbatch",
 ): ContractorFixture[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `contractor-batch-${i + 1}`,
@@ -597,7 +605,7 @@ export function createContractorBatch(
  */
 export function createNotificationBatch(
   userId: string,
-  count: number
+  count: number,
 ): NotificationFixture[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `notif-batch-${i + 1}`,
@@ -629,7 +637,11 @@ export function createMockApiResponse<T>(data: T) {
 /**
  * Creates a mock API error response.
  */
-export function createMockApiError(code: string, message: string, status = 400) {
+export function createMockApiError(
+  code: string,
+  message: string,
+  status = 400,
+) {
   return {
     ok: false,
     status,
@@ -644,7 +656,7 @@ export function createMockPaginatedResponse<T>(
   items: T[],
   page = 1,
   pageSize = 10,
-  total?: number
+  total?: number,
 ) {
   return {
     ok: true,

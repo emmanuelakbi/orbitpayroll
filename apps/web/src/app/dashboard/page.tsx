@@ -14,7 +14,13 @@ import {
 import { MneeBadge } from "@/components/treasury";
 import { api } from "@/lib/api";
 import { formatMnee } from "@/lib/utils";
-import { Wallet, CreditCard, Clock, ArrowRight, AlertCircle } from "lucide-react";
+import {
+  Wallet,
+  CreditCard,
+  Clock,
+  ArrowRight,
+  AlertCircle,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -86,10 +92,13 @@ export default function DashboardPage() {
         <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
           <div>
-            <p className="font-medium text-destructive">Insufficient Treasury Balance</p>
+            <p className="font-medium text-destructive">
+              Insufficient Treasury Balance
+            </p>
             <p className="text-sm text-muted-foreground">
-              Your treasury needs {formatMnee(payrollPreview.total)} MNEE for the next payroll,
-              but only has {formatMnee(treasury?.balance || "0")} MNEE.
+              Your treasury needs {formatMnee(payrollPreview.totalMnee)} MNEE
+              for the next payroll, but only has{" "}
+              {formatMnee(treasury?.mneeBalance || "0")} MNEE.
             </p>
             <Button variant="outline" size="sm" className="mt-2" asChild>
               <Link href="/dashboard/treasury">Fund Treasury</Link>
@@ -103,7 +112,7 @@ export default function DashboardPage() {
         {/* Treasury Balance Card */}
         <StatCard
           title="Treasury Balance"
-          value={treasury ? formatMnee(treasury.balance) : "--"}
+          value={treasury ? formatMnee(treasury.mneeBalance) : "--"}
           subtitle="MNEE"
           icon={<Wallet className="w-6 h-6" />}
           isLoading={treasuryLoading}
@@ -112,10 +121,12 @@ export default function DashboardPage() {
         {/* Upcoming Payroll Card */}
         <StatCard
           title="Upcoming Payroll"
-          value={payrollPreview ? formatMnee(payrollPreview.total) : "--"}
+          value={payrollPreview ? formatMnee(payrollPreview.totalMnee) : "--"}
           subtitle={
             payrollPreview
-              ? `${payrollPreview.contractors.length} contractor${payrollPreview.contractors.length !== 1 ? "s" : ""}`
+              ? `${payrollPreview.contractors.length} contractor${
+                  payrollPreview.contractors.length !== 1 ? "s" : ""
+                }`
               : "MNEE"
           }
           icon={<CreditCard className="w-6 h-6" />}
@@ -136,13 +147,21 @@ export default function DashboardPage() {
       <div className="mt-6 sm:mt-8">
         <h2 className="text-lg sm:text-xl font-semibold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          <Button variant="outline" asChild className="justify-start h-auto py-3 sm:py-2">
+          <Button
+            variant="outline"
+            asChild
+            className="justify-start h-auto py-3 sm:py-2"
+          >
             <Link href="/dashboard/contractors">
               Add Contractor
               <ArrowRight className="ml-auto h-4 w-4" aria-hidden="true" />
             </Link>
           </Button>
-          <Button variant="outline" asChild className="justify-start h-auto py-3 sm:py-2">
+          <Button
+            variant="outline"
+            asChild
+            className="justify-start h-auto py-3 sm:py-2"
+          >
             <Link href="/dashboard/treasury">
               Fund Treasury
               <ArrowRight className="ml-auto h-4 w-4" aria-hidden="true" />
@@ -165,7 +184,9 @@ export default function DashboardPage() {
       {/* Organization Info */}
       {currentOrg && (
         <div className="mt-6 sm:mt-8">
-          <h2 className="text-lg sm:text-xl font-semibold mb-4">Organization</h2>
+          <h2 className="text-lg sm:text-xl font-semibold mb-4">
+            Organization
+          </h2>
           <Card>
             <CardContent className="pt-6">
               <dl className="space-y-3">
@@ -181,11 +202,11 @@ export default function DashboardPage() {
                     </dd>
                   </div>
                 )}
-                {treasury?.address && (
+                {treasury?.contractAddress && (
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
                     <dt className="text-muted-foreground">Balance</dt>
                     <dd className="font-medium">
-                      {formatMnee(treasury.balance)} MNEE
+                      {formatMnee(treasury.mneeBalance)} MNEE
                     </dd>
                   </div>
                 )}

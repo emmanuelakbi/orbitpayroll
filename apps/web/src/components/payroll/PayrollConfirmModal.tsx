@@ -55,7 +55,7 @@ export function PayrollConfirmModal({
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total Amount:</span>
               <span className="font-semibold">
-                {formatMnee(preview.total)} MNEE
+                {formatMnee(preview.totalMnee)} MNEE
               </span>
             </div>
             <div className="flex justify-between">

@@ -7,7 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatMnee, formatDate, getExplorerUrl } from "@/lib/utils";
 import { formatAddress } from "@/lib/auth";
 import { api } from "@/lib/api";
-import { History, ExternalLink, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import {
+  History,
+  ExternalLink,
+  ArrowDownLeft,
+  ArrowUpRight,
+} from "lucide-react";
 
 interface TransactionHistoryProps {
   orgId: string;
@@ -26,21 +31,19 @@ interface TransactionEvent {
 
 /**
  * Accessible Transaction History component.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Proper heading structure
  * - External links indicate they open in new window
  * - Touch targets meet 44px minimum on mobile
- * 
+ *
  * Responsive Design:
  * - Stacks content on mobile
  * - Touch-friendly spacing
- * 
+ *
  * Validates: Requirements 7.1, 7.3, 8.1, 8.3
  */
-export function TransactionHistory({
-  orgId,
-}: TransactionHistoryProps) {
+export function TransactionHistory({ orgId }: TransactionHistoryProps) {
   // Fetch payroll runs as transaction history
   const {
     data: payrollRuns,
@@ -59,13 +62,13 @@ export function TransactionHistory({
     if (!payrollRuns?.data) return [];
 
     return payrollRuns.data
-      .filter((run) => run.txHash && run.status === "CONFIRMED")
+      .filter((run) => run.txHash && run.status === "EXECUTED")
       .map((run) => ({
         id: run.id,
         type: "payout" as const,
-        amount: run.totalAmount,
+        amount: run.totalMnee,
         txHash: run.txHash!,
-        timestamp: run.executedAt,
+        timestamp: run.executedAt ?? run.createdAt,
       }));
   }, [payrollRuns]);
 
@@ -79,7 +82,11 @@ export function TransactionHistory({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4" role="status" aria-label="Loading transaction history">
+          <div
+            className="space-y-4"
+            role="status"
+            aria-label="Loading transaction history"
+          >
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between">
                 <div className="space-y-2">
@@ -125,10 +132,11 @@ export function TransactionHistory({
       <CardContent>
         {transactions.length === 0 ? (
           <div className="text-center py-8">
-            <History className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-            <p className="text-sm text-muted-foreground">
-              No transactions yet
-            </p>
+            <History
+              className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4"
+              aria-hidden="true"
+            />
+            <p className="text-sm text-muted-foreground">No transactions yet</p>
             <p className="text-xs text-muted-foreground mt-1">
               Deposit MNEE or run payroll to see transactions here
             </p>
@@ -170,7 +178,9 @@ export function TransactionHistory({
                       className={`font-medium text-sm ${
                         tx.type === "deposit" ? "text-green-500" : ""
                       }`}
-                      aria-label={`${tx.type === "deposit" ? "Received" : "Sent"} ${formatMnee(tx.amount)} MNEE`}
+                      aria-label={`${
+                        tx.type === "deposit" ? "Received" : "Sent"
+                      } ${formatMnee(tx.amount)} MNEE`}
                     >
                       {tx.type === "deposit" ? "+" : "-"}
                       {formatMnee(tx.amount)} MNEE
@@ -187,7 +197,10 @@ export function TransactionHistory({
                     className="p-2 hover:bg-background rounded-md transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
                     aria-label={`View transaction on Etherscan (opens in new tab)`}
                   >
-                    <ExternalLink className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    <ExternalLink
+                      className="h-4 w-4 text-muted-foreground"
+                      aria-hidden="true"
+                    />
                   </a>
                 </div>
               </li>

@@ -68,7 +68,8 @@ const TREASURY_ABI = [
 ] as const;
 
 // MNEE token address (mainnet)
-const MNEE_ADDRESS = "0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFB6cF" as `0x${string}`;
+const MNEE_ADDRESS =
+  "0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF" as `0x${string}`;
 
 interface DepositModalProps {
   open: boolean;
@@ -105,15 +106,20 @@ export function DepositModal({
   });
 
   // Read current allowance
-  const { data: currentAllowance, refetch: refetchAllowance } = useReadContract({
-    address: MNEE_ADDRESS,
-    abi: ERC20_ABI,
-    functionName: "allowance",
-    args: address && treasuryAddress ? [address, treasuryAddress as `0x${string}`] : undefined,
-    query: {
-      enabled: !!address && !!treasuryAddress && open,
+  const { data: currentAllowance, refetch: refetchAllowance } = useReadContract(
+    {
+      address: MNEE_ADDRESS,
+      abi: ERC20_ABI,
+      functionName: "allowance",
+      args:
+        address && treasuryAddress
+          ? [address, treasuryAddress as `0x${string}`]
+          : undefined,
+      query: {
+        enabled: !!address && !!treasuryAddress && open,
+      },
     },
-  });
+  );
 
   // Write contract hooks
   const {
@@ -191,7 +197,7 @@ export function DepositModal({
             error: error.message || "Approval failed",
           });
         },
-      }
+      },
     );
   }, [treasuryAddress, parsedAmount, writeApprove]);
 
@@ -217,7 +223,7 @@ export function DepositModal({
             error: error.message || "Deposit failed",
           });
         },
-      }
+      },
     );
   }, [treasuryAddress, parsedAmount, writeDeposit]);
 
@@ -232,7 +238,13 @@ export function DepositModal({
         refetchAllowance();
       }
     }
-  }, [step, approveHash, isApproveConfirming, isApproveSuccess, refetchAllowance]);
+  }, [
+    step,
+    approveHash,
+    isApproveConfirming,
+    isApproveSuccess,
+    refetchAllowance,
+  ]);
 
   // Update tx status based on deposit state
   React.useEffect(() => {
@@ -272,7 +284,14 @@ export function DepositModal({
       resetDeposit();
       setTxStatus({ status: "idle" });
     }
-  }, [txStatus.status, step, resetApprove, resetDeposit, onOpenChange, onSuccess]);
+  }, [
+    txStatus.status,
+    step,
+    resetApprove,
+    resetDeposit,
+    onOpenChange,
+    onSuccess,
+  ]);
 
   // Handle max button
   const handleMax = React.useCallback(() => {

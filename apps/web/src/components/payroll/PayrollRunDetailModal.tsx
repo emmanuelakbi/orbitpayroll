@@ -33,13 +33,13 @@ interface PayrollRunDetailModalProps {
 }
 
 const statusVariants: Record<string, "success" | "warning" | "destructive"> = {
-  CONFIRMED: "success",
+  EXECUTED: "success",
   PENDING: "warning",
   FAILED: "destructive",
 };
 
 const statusLabels: Record<string, string> = {
-  CONFIRMED: "Confirmed",
+  EXECUTED: "Executed",
   PENDING: "Pending",
   FAILED: "Failed",
 };
@@ -68,7 +68,11 @@ export function PayrollRunDetailModal({
           <DialogTitle>Payroll Run Details</DialogTitle>
           <DialogDescription>
             {runDetail
-              ? `Executed on ${formatDate(runDetail.executedAt)}`
+              ? `Executed on ${
+                  runDetail.executedAt
+                    ? formatDate(runDetail.executedAt)
+                    : "N/A"
+                }`
               : "Loading details..."}
           </DialogDescription>
         </DialogHeader>
@@ -82,23 +86,32 @@ export function PayrollRunDetailModal({
               <div>
                 <p className="text-sm text-muted-foreground">Total Amount</p>
                 <p className="text-lg font-semibold">
-                  {formatMnee(runDetail.totalAmount)} MNEE
+                  {formatMnee(runDetail.totalMnee)} MNEE
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
-                <Badge variant={statusVariants[runDetail.status]} className="mt-1">
+                <Badge
+                  variant={statusVariants[runDetail.status]}
+                  className="mt-1"
+                >
                   {statusLabels[runDetail.status]}
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Contractors Paid</p>
-                <p className="text-lg font-semibold">{runDetail.contractorCount}</p>
+                <p className="text-sm text-muted-foreground">
+                  Contractors Paid
+                </p>
+                <p className="text-lg font-semibold">
+                  {runDetail.contractorCount}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Date</p>
                 <p className="text-sm font-medium">
-                  {formatDate(runDetail.executedAt)}
+                  {runDetail.executedAt
+                    ? formatDate(runDetail.executedAt)
+                    : "Pending"}
                 </p>
               </div>
             </div>
@@ -148,7 +161,7 @@ export function PayrollRunDetailModal({
                   Export CSV
                 </Button>
               </div>
-              
+
               {/* Desktop Table */}
               <div className="hidden sm:block border rounded-lg overflow-hidden">
                 <Table>
@@ -160,16 +173,16 @@ export function PayrollRunDetailModal({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {runDetail.payments.map((payment, index) => (
-                      <TableRow key={`${payment.contractorId}-${index}`}>
+                    {runDetail.items.map((item, index) => (
+                      <TableRow key={`${item.contractorId}-${index}`}>
                         <TableCell className="font-medium">
-                          {payment.contractorName}
+                          {item.contractorName}
                         </TableCell>
                         <TableCell className="font-mono text-sm">
-                          {formatAddress(payment.walletAddress)}
+                          {formatAddress(item.walletAddress)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {formatMnee(payment.amount)} MNEE
+                          {formatMnee(item.amountMnee)} MNEE
                         </TableCell>
                       </TableRow>
                     ))}
@@ -179,23 +192,23 @@ export function PayrollRunDetailModal({
 
               {/* Mobile Cards */}
               <div className="sm:hidden space-y-3">
-                {runDetail.payments.map((payment, index) => (
+                {runDetail.items.map((item, index) => (
                   <div
-                    key={`${payment.contractorId}-${index}`}
+                    key={`${item.contractorId}-${index}`}
                     className="p-4 border rounded-lg space-y-2"
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-medium">{payment.contractorName}</p>
+                        <p className="font-medium">{item.contractorName}</p>
                         <p className="text-sm text-muted-foreground font-mono">
-                          {formatAddress(payment.walletAddress)}
+                          {formatAddress(item.walletAddress)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-sm pt-2 border-t">
                       <span className="text-muted-foreground">Amount</span>
                       <span className="font-medium">
-                        {formatMnee(payment.amount)} MNEE
+                        {formatMnee(item.amountMnee)} MNEE
                       </span>
                     </div>
                   </div>

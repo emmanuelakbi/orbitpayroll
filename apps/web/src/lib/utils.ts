@@ -6,22 +6,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Format MNEE amount for display (assumes 18 decimals)
+ * Format MNEE amount for display.
+ * API returns decimal strings like "1000.00000000", not wei.
  */
-export function formatMnee(amount: string | bigint): string {
-  const value = typeof amount === "string" ? BigInt(amount) : amount;
-  const decimals = 18;
-  const divisor = BigInt(10 ** decimals);
-  const integerPart = value / divisor;
-  const fractionalPart = value % divisor;
-  
-  // Format with 2 decimal places
-  const fractionalStr = fractionalPart.toString().padStart(decimals, "0").slice(0, 2);
-  
+export function formatMnee(amount: string | number): string {
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  if (isNaN(num)) return "0.00";
+
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(Number(`${integerPart}.${fractionalStr}`));
+  }).format(num);
 }
 
 /**
@@ -48,7 +43,7 @@ export function formatDateShort(date: string | Date): string {
  */
 export function getExplorerUrl(
   txHash: string,
-  network: "mainnet" | "sepolia" = "sepolia"
+  network: "mainnet" | "sepolia" = "sepolia",
 ): string {
   const base =
     network === "mainnet"

@@ -3,7 +3,12 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDashboard } from "@/components/dashboard";
-import { TreasuryBalanceCard, DepositModal, TransactionHistory, MneeIntegrationCard } from "@/components/treasury";
+import {
+  TreasuryBalanceCard,
+  DepositModal,
+  TransactionHistory,
+  MneeIntegrationCard,
+} from "@/components/treasury";
 import { DashboardSkeleton, QueryError } from "@/components/dashboard";
 import { api } from "@/lib/api";
 
@@ -25,9 +30,7 @@ export default function TreasuryPage() {
   });
 
   // Fetch payroll preview for upcoming payroll total
-  const {
-    data: payrollPreview,
-  } = useQuery({
+  const { data: payrollPreview } = useQuery({
     queryKey: ["payroll-preview", currentOrg?.id],
     queryFn: () => api.payroll.preview(currentOrg!.id),
     enabled: !!currentOrg?.id,
@@ -79,9 +82,11 @@ export default function TreasuryPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Balance Card */}
             <TreasuryBalanceCard
-              balance={treasury?.balance || "0"}
-              contractAddress={treasury?.address || currentOrg.treasuryAddress || ""}
-              upcomingPayroll={payrollPreview?.total}
+              balance={treasury?.mneeBalance || "0"}
+              contractAddress={
+                treasury?.contractAddress || currentOrg.treasuryAddress || ""
+              }
+              upcomingPayroll={payrollPreview?.totalMnee}
               isLoading={isLoading}
               onDeposit={() => setDepositModalOpen(true)}
             />
@@ -89,7 +94,9 @@ export default function TreasuryPage() {
             {/* Transaction History */}
             <TransactionHistory
               orgId={currentOrg.id}
-              treasuryAddress={treasury?.address || currentOrg.treasuryAddress || ""}
+              treasuryAddress={
+                treasury?.contractAddress || currentOrg.treasuryAddress || ""
+              }
             />
           </div>
 
@@ -102,7 +109,9 @@ export default function TreasuryPage() {
       <DepositModal
         open={depositModalOpen}
         onOpenChange={setDepositModalOpen}
-        treasuryAddress={treasury?.address || currentOrg.treasuryAddress || ""}
+        treasuryAddress={
+          treasury?.contractAddress || currentOrg.treasuryAddress || ""
+        }
         onSuccess={handleDepositSuccess}
       />
     </div>
