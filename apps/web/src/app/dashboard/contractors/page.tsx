@@ -61,8 +61,10 @@ export default function ContractorsPage() {
 
   // Create contractor mutation
   const createMutation = useMutation({
-    mutationFn: (data: ContractorInput) =>
-      api.contractors.create(currentOrg!.id, data),
+    mutationFn: (data: ContractorInput) => {
+      if (!currentOrg) throw new Error("No organization selected");
+      return api.contractors.create(currentOrg.id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["contractors", currentOrg?.id],
@@ -80,7 +82,10 @@ export default function ContractorsPage() {
     }: {
       id: string;
       data: Partial<ContractorInput>;
-    }) => api.contractors.update(currentOrg!.id, id, data),
+    }) => {
+      if (!currentOrg) throw new Error("No organization selected");
+      return api.contractors.update(currentOrg.id, id, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["contractors", currentOrg?.id],
@@ -92,7 +97,10 @@ export default function ContractorsPage() {
 
   // Archive contractor mutation
   const archiveMutation = useMutation({
-    mutationFn: (id: string) => api.contractors.archive(currentOrg!.id, id),
+    mutationFn: (id: string) => {
+      if (!currentOrg) throw new Error("No organization selected");
+      return api.contractors.archive(currentOrg.id, id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["contractors", currentOrg?.id],
@@ -119,6 +127,7 @@ export default function ContractorsPage() {
   };
 
   const handleFormSubmit = async (data: ContractorInput) => {
+    if (!currentOrg) return;
     if (selectedContractor) {
       await updateMutation.mutateAsync({ id: selectedContractor.id, data });
     } else {

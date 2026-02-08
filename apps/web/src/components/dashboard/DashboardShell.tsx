@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { DevBanner } from "@/components/ui/network-indicator";
@@ -28,23 +28,21 @@ function setStoredOrgId(orgId: string): void {
 
 /**
  * Dashboard Shell component with accessibility features.
- * 
+ *
  * WCAG 2.1 AA Compliance:
  * - Skip link for keyboard navigation (7.2)
  * - Proper landmark regions (main, nav, header)
  * - Focus management for sidebar
- * 
+ *
  * Validates: Requirements 7.1, 7.2
  */
 export function DashboardShell({ children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [currentOrgId, setCurrentOrgId] = React.useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Fetch organizations
-  const {
-    data: orgsData = [],
-    isLoading: orgsLoading,
-  } = useQuery({
+  const { data: orgsData = [], isLoading: orgsLoading } = useQuery({
     queryKey: ["organizations"],
     queryFn: () => api.orgs.list(),
   });
@@ -52,15 +50,39 @@ export function DashboardShell({ children }: DashboardShellProps) {
   // Ensure organizations is always an array - memoized to prevent dependency changes
   const organizations = React.useMemo(
     () => (Array.isArray(orgsData) ? orgsData : []),
-    [orgsData]
+    [orgsData],
   );
+
+  // Auto-create org when user has none
+  const autoCreateOrg = useMutation({
+    mutationFn: () => api.orgs.create({ name: "My Organization" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+    },
+  });
+
+  React.useEffect(() => {
+    if (
+      !orgsLoading &&
+      organizations.length === 0 &&
+      !autoCreateOrg.isPending &&
+      !autoCreateOrg.isSuccess
+    ) {
+      autoCreateOrg.mutate();
+    }
+  }, [
+    orgsLoading,
+    organizations.length,
+    autoCreateOrg.isPending,
+    autoCreateOrg.isSuccess,
+  ]);
 
   // Initialize current org from storage or first org
   React.useEffect(() => {
     if (organizations.length > 0 && !currentOrgId) {
       const storedId = getStoredOrgId();
       const validStoredOrg = organizations.find((org) => org.id === storedId);
-      
+
       if (validStoredOrg) {
         setCurrentOrgId(validStoredOrg.id);
       } else {
@@ -72,7 +94,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   const currentOrg = React.useMemo(
     () => organizations.find((org) => org.id === currentOrgId) || null,
-    [organizations, currentOrgId]
+    [organizations, currentOrgId],
   );
 
   const handleOrgChange = React.useCallback((orgId: string) => {
@@ -84,10 +106,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
     <div className="min-h-screen bg-background">
       {/* Skip link for keyboard navigation - WCAG 2.4.1 */}
       <SkipLink targetId="main-content" />
-      
+
       {/* Development Banner - shows testnet/mock status */}
       <DevBanner />
-      
+
       <div className="flex">
         {/* Sidebar */}
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -103,8 +125,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
           />
 
           {/* Page content - main landmark with focusable target for skip link */}
-          <main 
-            id="main-content" 
+          <main
+            id="main-content"
             className="flex-1 p-4 md:p-6 lg:p-8 outline-none"
             tabIndex={-1}
             aria-label="Main content"

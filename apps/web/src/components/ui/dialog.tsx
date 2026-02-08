@@ -176,10 +176,10 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50 pointer-events-none">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/80 animate-in fade-in-0"
+        className="fixed inset-0 bg-black/80 pointer-events-auto animate-in fade-in-0"
         onClick={() => onOpenChange(false)}
         aria-hidden="true"
       />
@@ -192,7 +192,7 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
         aria-describedby={descriptionId}
         tabIndex={-1}
         className={cn(
-          "relative fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%] sm:rounded-lg",
+          "pointer-events-auto relative fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border bg-background p-6 shadow-lg duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%] sm:rounded-lg",
           className,
         )}
         {...props}
@@ -200,7 +200,7 @@ function DialogContent({ children, className, ...props }: DialogContentProps) {
         {children}
         <button
           type="button"
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           onClick={() => onOpenChange(false)}
           aria-label="Close dialog"
         >
