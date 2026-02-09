@@ -24,6 +24,7 @@ import {
 } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { Loader2 } from "lucide-react";
+import { isMockContractsEnabled } from "@/lib/feature-flags";
 
 // ERC20 ABI for approval and balance
 const ERC20_ABI = [
@@ -166,22 +167,41 @@ export function DepositModal({
 
   // Format user balance for display
   const formattedBalance = React.useMemo(() => {
+    if (isMockContractsEnabled()) return "100,000.00";
     if (!userBalance) return "0.00";
     return Number(formatUnits(userBalance, 18)).toFixed(2);
   }, [userBalance]);
 
   // Validation
   const isValidAmount =
-    parsedAmount > BigInt(0) && (!userBalance || parsedAmount <= userBalance);
-  const hasInsufficientBalance = userBalance && parsedAmount > userBalance;
+    parsedAmount > BigInt(0) &&
+    (isMockContractsEnabled() || !userBalance || parsedAmount <= userBalance);
+  const hasInsufficientBalance =
+    !isMockContractsEnabled() && userBalance && parsedAmount > userBalance;
+
+  // In mock mode, skip approval step entirely
+  const mockNeedsApproval = isMockContractsEnabled() ? false : needsApproval;
 
   // Handle approval
   const handleApprove = React.useCallback(() => {
     if (!treasuryAddress || parsedAmount === BigInt(0)) return;
 
+    const isMock = isMockContractsEnabled();
+
     setShowTxModal(true);
     setTxStatus({ status: "pending", message: "Requesting approval..." });
     setStep("approve");
+
+    if (isMock) {
+      // Mock mode: simulate approval with a fake tx hash
+      setTimeout(() => {
+        setTxStatus({
+          status: "success",
+          txHash: "0xmock_approve_" + Date.now().toString(16),
+        });
+      }, 1500);
+      return;
+    }
 
     writeApprove(
       {
@@ -205,9 +225,22 @@ export function DepositModal({
   const handleDeposit = React.useCallback(() => {
     if (!treasuryAddress || parsedAmount === BigInt(0)) return;
 
+    const isMock = isMockContractsEnabled();
+
     setShowTxModal(true);
     setTxStatus({ status: "pending", message: "Requesting deposit..." });
     setStep("deposit");
+
+    if (isMock) {
+      // Mock mode: simulate deposit with a fake tx hash
+      setTimeout(() => {
+        setTxStatus({
+          status: "success",
+          txHash: "0xmock_deposit_" + Date.now().toString(16),
+        });
+      }, 2000);
+      return;
+    }
 
     writeDeposit(
       {
@@ -360,7 +393,7 @@ export function DepositModal({
             </div>
 
             {/* Approval Status */}
-            {isValidAmount && needsApproval && (
+            {isValidAmount && mockNeedsApproval && (
               <div className="p-3 bg-muted rounded-lg text-sm">
                 <p className="text-muted-foreground">
                   You need to approve the treasury contract to spend your MNEE
@@ -374,7 +407,7 @@ export function DepositModal({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            {needsApproval ? (
+            {mockNeedsApproval ? (
               <Button
                 onClick={handleApprove}
                 disabled={!isValidAmount || isProcessing}
