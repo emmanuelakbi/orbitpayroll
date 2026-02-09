@@ -62,3 +62,6 @@ secrets/
 # Hardhat/Foundry artifacts (keep in packages/contracts)
 # cache/
 # artifacts/
+
+# Log files
+logs.*.json

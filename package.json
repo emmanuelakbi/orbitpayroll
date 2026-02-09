@@ -34,7 +34,8 @@
     "demo:verify": "./scripts/setup-demo.sh verify",
     "demo:status": "./scripts/setup-demo.sh status",
     "test:e2e": "./scripts/test-harness.sh",
-    "lighthouse": "npm run lighthouse -w web"
+    "lighthouse": "npm run lighthouse -w web",
+    "postinstall": "./scripts/patch-walletconnect-logger.sh"
   },
   "engines": {
     "node": ">=18.0.0"
