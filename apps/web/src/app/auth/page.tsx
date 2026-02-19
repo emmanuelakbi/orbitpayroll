@@ -51,8 +51,8 @@ export default function AuthPage() {
   const isSigning = connectionState === "signing";
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <main className="min-h-screen bg-muted/20 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-border/80 shadow-sm">
         <CardHeader className="text-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Wallet className="w-8 h-8 text-primary" />
@@ -151,7 +151,7 @@ export default function AuthPage() {
 
           {/* Signing Instructions */}
           {isSigning && (
-            <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+            <div className="p-4 rounded-lg bg-muted border border-border">
               <h4 className="font-medium text-sm mb-2">Signing Instructions</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Check your wallet for a signature request</li>

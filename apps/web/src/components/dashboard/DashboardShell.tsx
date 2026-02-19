@@ -54,7 +54,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   );
 
   // Auto-create org when user has none
-  const autoCreateOrg = useMutation({
+  const { mutate: createOrganization, isPending: isCreatingOrg, isSuccess: hasCreatedOrg } = useMutation({
     mutationFn: () => api.orgs.create({ name: "My Organization" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
@@ -62,20 +62,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
   });
 
   React.useEffect(() => {
-    if (
-      !orgsLoading &&
-      organizations.length === 0 &&
-      !autoCreateOrg.isPending &&
-      !autoCreateOrg.isSuccess
-    ) {
-      autoCreateOrg.mutate();
+    if (!orgsLoading && organizations.length === 0 && !isCreatingOrg && !hasCreatedOrg) {
+      createOrganization();
     }
-  }, [
-    orgsLoading,
-    organizations.length,
-    autoCreateOrg.isPending,
-    autoCreateOrg.isSuccess,
-  ]);
+  }, [orgsLoading, organizations.length, isCreatingOrg, hasCreatedOrg, createOrganization]);
 
   // Initialize current org from storage or first org
   React.useEffect(() => {

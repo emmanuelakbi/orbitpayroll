@@ -65,7 +65,7 @@ export function MneeIntegrationCard() {
   ];
 
   return (
-    <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+    <Card className="border-2 border-primary/20 bg-muted/30">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

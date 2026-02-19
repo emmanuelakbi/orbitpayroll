@@ -20,21 +20,23 @@ export default function Home() {
   }, [isAuthenticated, router]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <main className="min-h-screen bg-background">
       {/* Header */}
-      <header className="container mx-auto px-4 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <header className="border-b bg-background/95">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">OP</span>
           </div>
           <span className="font-semibold text-lg">OrbitPayroll</span>
         </div>
-        <ConnectButton />
+          <ConnectButton />
+        </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-6">
+      <section className="container mx-auto px-4 py-16 md:py-20 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/5 text-primary text-sm mb-6">
           <Zap className="w-4 h-4" />
           <span>Built for MNEE Hackathon</span>
         </div>
@@ -51,14 +53,19 @@ export default function Home() {
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <ConnectButton className="min-w-[200px] h-12 text-base" />
-          <Button variant="outline" size="lg" className="min-w-[200px] h-12 text-base">
+          <Button
+            variant="outline"
+            size="lg"
+            className="min-w-[200px] h-12 text-base"
+            onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+          >
             Learn More
           </Button>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section id="features" className="container mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
           Everything You Need for Web3 Payroll
         </h2>
@@ -101,8 +108,8 @@ export default function Home() {
       </section>
 
       {/* MNEE Hackathon Section */}
-      <section className="container mx-auto px-4 py-16">
-        <Card className="bg-primary/5 border-primary/20">
+      <section className="container mx-auto px-4 pb-16">
+        <Card className="border-primary/20 bg-muted/30">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl md:text-3xl">
               Built for the MNEE Ecosystem
@@ -135,9 +142,7 @@ export default function Home() {
               OrbitPayroll © 2026
             </span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Built with ❤️ for the MNEE Hackathon
-          </p>
+          <p className="text-sm text-muted-foreground">Built for the MNEE Hackathon</p>
         </div>
       </footer>
     </main>
